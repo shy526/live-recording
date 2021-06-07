@@ -1,0 +1,16 @@
+http:
+  commHeader: {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.116 Safari/537.36"}
+  clientConfig:
+    httpClient:
+      connectionRequestTimeout: 10000
+      connectTimeout: 50000
+      socketTimeout: 30000
+      validateAfterInactivity: 2000
+      maxTotal: 200
+      defaultMaxPerRoute: 100
+      primary: true
+      closeTask:
+        name: httpClient-close-task
+        idleTime: 4000
+        initialDelay: 4000
+        delay: 4000
