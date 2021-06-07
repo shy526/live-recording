@@ -17,7 +17,7 @@ import top.ccxxh.liverecording.service.LiveService;
 @Service
 public class BiliBiliServiceImpl implements LiveService {
     private final static String ROOM_INFO_URL = "https://api.live.bilibili.com/room/v1/Room/room_init?id=%s";
-    private final static String PAY_URL = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=%s&quality=4&platform=web";
+    private final static String PAY_URL = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=%s&quality=3&platform=web";
     private final static String KEY_DATA = "data";
     private final static String KEY_LIVE_STATUS = "live_status";
     private final static String KEY_D_URL = "durl";
