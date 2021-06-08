@@ -27,17 +27,17 @@ public class LiveRecordingApplication implements CommandLineRunner {
         SpringApplication.run(LiveRecordingApplication.class, args);
     }
 
-    private final static long MAX_SIZE = (long) ((1000L * 1000L) * 2D);
+    private final static long MAX_SIZE = (long) ((1000L * 1000L) * 10D);
 
     @Override
     public void run(String... args) throws Exception {
         FlvRecording flvRecording = new FlvRecording(22621440, biliBiliService, httpClientService, MAX_SIZE);
         new Thread(flvRecording).start();
 
-/*        new Thread(() -> {
+        new Thread(() -> {
             for (; ; ) {
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(1000);
                     if (flvRecording != null) {
                         log.info(flvRecording.info().toJSONString());
                     }
@@ -45,7 +45,7 @@ public class LiveRecordingApplication implements CommandLineRunner {
                     e.printStackTrace();
                 }
             }
-        }).start();*/
+        }).start();
         log.info("_______________________________________");
     }
 }

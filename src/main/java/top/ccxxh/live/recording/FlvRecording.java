@@ -2,6 +2,7 @@ package top.ccxxh.live.recording;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.ccxh.httpclient.common.HttpResult;
@@ -65,7 +66,6 @@ public class FlvRecording implements Runnable {
     public void run() {
         if (!liveService.getLiveStatus(roomId)) {
             stop = true;
-            return;
         }
 
         log.info("start");
@@ -81,12 +81,14 @@ public class FlvRecording implements Runnable {
         String tempFile = file + ".temp";
         String livePayUrl = liveService.getLivePayUrl(roomId);
         log.info("start:{}", livePayUrl);
-        HttpResult httpResult = httpClientService.get(livePayUrl);
 
+        BufferedInputStream liveIn = null;
         try (
-                BufferedInputStream liveIn = new BufferedInputStream(httpResult.getResponse().getEntity().getContent());
+                HttpResult httpResult = httpClientService.get(livePayUrl);
+                CloseableHttpResponse response = httpResult.getResponse();
                 BufferedOutputStream fileOut = new BufferedOutputStream(new FileOutputStream(tempFile))
         ) {
+            liveIn = new BufferedInputStream(response.getEntity().getContent());
             int len = -1;
             now = 0;
             while ((len = liveIn.read(buff)) != -1) {
@@ -100,6 +102,9 @@ public class FlvRecording implements Runnable {
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+        } finally {
+            //这里关闭会导致线程卡死
+            liveIn = null;
         }
         String path = String.format(file, DATA_FORMAT.format(new Date()));
         new File(tempFile).renameTo(new File(path));
