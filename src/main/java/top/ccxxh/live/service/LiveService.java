@@ -1,4 +1,4 @@
-package top.ccxxh.liverecording.service;
+package top.ccxxh.live.service;
 
 import com.alibaba.fastjson.JSONObject;
 

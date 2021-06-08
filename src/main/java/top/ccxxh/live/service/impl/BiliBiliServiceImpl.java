@@ -1,4 +1,4 @@
-package top.ccxxh.liverecording.service.impl;
+package top.ccxxh.live.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
-import top.ccxxh.liverecording.service.LiveService;
+import top.ccxxh.live.service.LiveService;
 
 /**
  * @author qing
