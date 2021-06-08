@@ -22,7 +22,15 @@ public class FlvRecording implements Runnable {
     private final static Logger log = LoggerFactory.getLogger(FlvRecording.class);
     private final static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     private final static String SUFFIX = ".flv";
-
+    private final byte[] buff = new byte[1024 * 4];
+    /**
+     * 房间号
+     */
+    private final Integer roomId;
+    /**
+     * 文件最大容量
+     */
+    private final long maxSize;
     public FlvRecording(Integer roomId, LiveService liveService, HttpClientService httpClientService, long maxSize) {
         this.roomId = roomId;
         this.liveService = liveService;
@@ -30,37 +38,13 @@ public class FlvRecording implements Runnable {
         this.maxSize = maxSize;
     }
 
-    /**
-     * 房间号
-     */
-    private final Integer roomId;
+
     /**
      * 处理live的服务
      */
     private final LiveService liveService;
     private final HttpClientService httpClientService;
-    /**
-     * 文件最大容量
-     */
-    private final long maxSize;
-    private final byte[] buff = new byte[1024 * 4];
-    /**
-     * 分p文件
-     */
-    private int fileIndex = 0;
-    /**
-     * 所有已经生成的文件路径
-     */
-    private final List<String> pathList = new ArrayList<>();
-    /**
-     * 总的byte数
-     */
-    private long total = 0;
-    /**
-     * 当前文件的byte数
-     */
-    private long now = 0;
-    private boolean stop = false;
+
 
     @Override
     public void run() {
