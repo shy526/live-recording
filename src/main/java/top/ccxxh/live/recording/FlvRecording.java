@@ -42,6 +42,9 @@ public class FlvRecording extends AbsFlvRecording {
 
     @Override
     public void recording() {
+        if (!liveService.getLiveStatus(getRoomId())) {
+            return;
+        }
         boolean flag = false;
         addFileIndex();
         String file = getRoomId() + "=" + DATA_FORMAT.format(new Date()) + "の%s" + "[" + getFileIndex() + "]" + SUFFIX;
@@ -75,7 +78,7 @@ public class FlvRecording extends AbsFlvRecording {
         } else {
             String path = String.format(file, DATA_FORMAT.format(new Date()));
             tempFile.renameTo(new File(path));
-            log.info("{}:over",path);
+            log.info("{}:over", path);
             addPathList(path);
         }
         if (flag) {
