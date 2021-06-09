@@ -31,7 +31,7 @@ public class LiveRecordingApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        FlvRecording flvRecording = new FlvRecording(23129573, biliBiliService, httpClientService, MAX_SIZE);
+        FlvRecording flvRecording = new FlvRecording(22818072, biliBiliService, httpClientService, MAX_SIZE);
         new Thread(flvRecording).start();
     }
 }
