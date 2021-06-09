@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import top.ccxh.httpclient.autoconfigure.CloseExpiredConnectionsTask;
 import top.ccxh.httpclient.tool.ThreadPoolUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -130,10 +131,11 @@ public abstract class AbsFlvRecording implements Runnable {
 
     public void sayHe() {
         log.info("roomId:{},total:{},fileIndex:{}:stop:{}", roomId, total, fileIndex, stop);
-        log.info("roomId:{},recordingPaths:{}", roomId, pathList);
         if (!stop) {
-            log.info("{}:{}/{}", nowPath, now, maxSize);
+
+            log.info("{}:{}/{}-----{}%",roomId, nowPath, now,  new BigDecimal(now).divide(new BigDecimal(maxSize),2, BigDecimal.ROUND_HALF_UP));
         }
+        log.info("roomId:{},recordingPaths:{}", roomId, pathList);
     }
 
 }
