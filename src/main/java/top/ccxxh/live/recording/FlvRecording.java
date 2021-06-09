@@ -45,15 +45,15 @@ public class FlvRecording extends AbsFlvRecording {
         boolean flag = false;
         addFileIndex();
         String file = getRoomId() + "=" + DATA_FORMAT.format(new Date()) + "の%s" + "[" + getFileIndex() + "]" + SUFFIX;
-        String tempFile = file + ".temp";
-        setNowPath(tempFile);
+        String tempPath = file + ".temp";
+        setNowPath(tempPath);
         String livePayUrl = liveService.getLivePayUrl(getRoomId());
         log.info("start:{}", livePayUrl);
         BufferedInputStream liveIn = null;
         try (
                 HttpResult httpResult = httpClientService.get(livePayUrl);
                 CloseableHttpResponse response = httpResult.getResponse();
-                BufferedOutputStream fileOut = new BufferedOutputStream(new FileOutputStream(tempFile))
+                BufferedOutputStream fileOut = new BufferedOutputStream(new FileOutputStream(tempPath))
         ) {
             liveIn = new BufferedInputStream(response.getEntity().getContent());
             int len = -1;
@@ -69,9 +69,15 @@ public class FlvRecording extends AbsFlvRecording {
             log.error(e.getMessage(), e);
         }
         IOUtils.close(liveIn);
-        String path = String.format(file, DATA_FORMAT.format(new Date()));
-        new File(tempFile).renameTo(new File(path));
-        addPathList(path);
+        final File tempFile = new File(tempPath);
+        if (tempFile.length() <= 0) {
+            tempFile.delete();
+        } else {
+            String path = String.format(file, DATA_FORMAT.format(new Date()));
+            tempFile.renameTo(new File(path));
+            log.info("{}:over",path);
+            addPathList(path);
+        }
         if (flag) {
             recording();
         }

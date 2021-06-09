@@ -118,10 +118,11 @@ public abstract class AbsFlvRecording implements Runnable {
     public void run() {
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = ThreadPoolUtils.getScheduledThreadPoolExecutor(roomId.toString(), 1);
         scheduledThreadPoolExecutor.scheduleWithFixedDelay(
-                this::sayHe, 10000, 10000, TimeUnit.MILLISECONDS);
+                this::sayHe, 10000, 30000, TimeUnit.MILLISECONDS);
         recording();
         stop();
         scheduledThreadPoolExecutor.shutdown();
+        sayHe();
     }
 
     /**
@@ -130,12 +131,33 @@ public abstract class AbsFlvRecording implements Runnable {
     public abstract void recording();
 
     public void sayHe() {
-        log.info("roomId:{},total:{},fileIndex:{}:stop:{}", roomId, total, fileIndex, stop);
-        if (!stop) {
-
-            log.info("{}:{}/{}-----{}%",roomId, nowPath, now,  new BigDecimal(now).divide(new BigDecimal(maxSize),2, BigDecimal.ROUND_HALF_UP));
+        String infoStr = "\n" +
+                "-----------------{}-------------------- \n" +
+                "roomId:{},total:{},fileIndex:{}:stop:{} \n";
+        boolean stopFlag = stop;
+        infoStr += stop ? "" : "{}:{}/{}-----{} \n";
+        boolean emptyFlag = pathList.isEmpty();
+        infoStr += emptyFlag ? "" : "recordingPaths:{} \n";
+        infoStr += "-----------------{}--------------------";
+        if (!stopFlag && !emptyFlag) {
+            log.info(infoStr, roomId, roomId, total, fileIndex, stop,
+                    nowPath, now, maxSize, new BigDecimal(now).divide(new BigDecimal(maxSize), 2, BigDecimal.ROUND_HALF_UP)
+                    , pathList,
+                    roomId);
+            return;
         }
-        log.info("roomId:{},recordingPaths:{}", roomId, pathList);
+        if (!stopFlag) {
+            log.info(infoStr, roomId, roomId, total, fileIndex, stop,
+                    nowPath, now, maxSize, new BigDecimal(now).divide(new BigDecimal(maxSize), 2, BigDecimal.ROUND_HALF_UP),
+                    roomId);
+            return;
+        }
+        if (!emptyFlag) {
+            log.info(infoStr, roomId, roomId, total, fileIndex, stop,
+                    pathList,
+                    roomId);
+        }
+
     }
 
 }
