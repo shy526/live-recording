@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
+import top.ccxxh.live.po.RoomInfo;
 import top.ccxxh.live.service.LiveService;
 
 import java.util.HashMap;
@@ -19,10 +20,10 @@ import java.util.Map;
  */
 @Service
 public class BiliBiliServiceImpl implements LiveService {
-    private final static String ROOM_INFO_URL = "https://api.live.bilibili.com/room/v1/Room/room_init?id=%s";
-    private final static String PAY_URL = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=%s&quality=3&platform=web";
-    private final static String PAY_URL_2 = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?room_id=%s&protocol=0,1&format=0,1,2&codec=0,1&qn=150&platform=web&ptype=8";
-    private final static String ROOM_INFO_URL_2 = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=%s";
+    private final static String ROOM_INFO_INIT_URL = "https://api.live.bilibili.com/room/v1/Room/room_init?id=%s";
+    private final static String OLD_PAY_URL = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=%s&quality=3&platform=web";
+    private final static String PAY_URL = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?room_id=%s&protocol=0,1&format=0,1,2&codec=0,1&qn=150&platform=web&ptype=8";
+    private final static String ROOM_INFO_URL = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=%s";
     private final static String KEY_DATA = "data";
     private final static String KEY_LIVE_STATUS = "live_status";
     private final static String KEY_D_URL = "durl";
@@ -34,26 +35,37 @@ public class BiliBiliServiceImpl implements LiveService {
     private HttpClientService httpClientService;
 
     @Override
-    public JSONObject getRoomInfo(Integer id) {
-        HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_URL_2, id));
-        return getJson(httpResult);
+    public RoomInfo getRoomInfo(Integer id) {
+        HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
+        return bRoomInfo2RoomInfo(httpResult);
+    }
+
+    private RoomInfo bRoomInfo2RoomInfo(HttpResult httpResult) {
+        JSONObject json = getJson(httpResult);
+        RoomInfo result = new RoomInfo();
+        JSONObject roomInfo = json.getJSONObject("room_info");
+        JSONObject anchorInfo = json.getJSONObject("anchor_info").getJSONObject("base_info");
+        result.setRoomTitle(roomInfo.getString("title"));
+        result.setRoomId(roomInfo.getInteger("room_id"));
+        result.setLiveStatus(roomInfo.getInteger("live_status"));
+        result.setuId(roomInfo.getInteger("uid"));
+        result.setuName(anchorInfo.getString("uname"));
+        result.setGender(anchorInfo.getString("gender"));
+        return result;
     }
 
     @Override
     public String getLivePayUrl(Integer id) {
-/*        HttpResult httpResult = httpClientService.get(String.format(PAY_URL, id));
+        HttpResult httpResult = httpClientService.get(String.format(OLD_PAY_URL, id));
         JSONObject result = getJson(httpResult);
         JSONArray jsonArray = result.getJSONArray(KEY_D_URL);
-        return jsonArray.getJSONObject(0).getString(KEY_URL);*/
-        Map<String, String> header = new HashMap<>();
-        header.put("Host", "api.live.bilibili.com");
-        HttpResult httpResult = httpClientService.get(String.format(PAY_URL_2,id), null, header);
-        return test(httpResult);
+        return jsonArray.getJSONObject(0).getString(KEY_URL);
+   /*     */
     }
 
     @Override
     public Boolean getLiveStatus(Integer id) {
-        HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
+        HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_INIT_URL, id));
         JSONObject result = getJson(httpResult);
         log.info(result.toJSONString());
         return result.getIntValue(KEY_LIVE_STATUS) == LIVE;
@@ -65,15 +77,18 @@ public class BiliBiliServiceImpl implements LiveService {
         return result.getJSONObject(KEY_DATA);
     }
 
-    private String test(HttpResult httpResult) {
+    private String newGetLivePayUrl(Integer id) {
+        Map<String, String> header = new HashMap<>();
+        header.put("Host", "api.live.bilibili.com");
+        HttpResult httpResult = httpClientService.get(String.format(PAY_URL,id), null, header);
         final JSONObject data = getJson(httpResult);
         final JSONArray stream = data.getJSONObject("playurl_info").getJSONObject("playurl").getJSONArray("stream");
         final JSONObject item = stream.getJSONObject(0);
         final JSONObject format = item.getJSONArray("format").getJSONObject(0);
         final JSONObject codec = format.getJSONArray("codec").getJSONObject(0);
-        final String base_url = codec.getString("base_url");
+        final String baseUrl = codec.getString("base_url");
         final JSONObject urlInfo = codec.getJSONArray("url_info").getJSONObject(0);
-        return urlInfo.getString("host") + base_url + urlInfo.getString("extra");
+        return urlInfo.getString("host") + baseUrl + urlInfo.getString("extra");
 
     }
 

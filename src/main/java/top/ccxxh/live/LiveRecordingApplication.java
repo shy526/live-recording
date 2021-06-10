@@ -34,11 +34,11 @@ public class LiveRecordingApplication implements CommandLineRunner {
         SpringApplication.run(LiveRecordingApplication.class, args);
     }
 
-    private final static long MAX_SIZE = (long) ((1000L * 1000L) * 10D);
+    private final static long MAX_SIZE = (long) ((1000L * 1000L) * 400D);
 
     @Override
     public void run(String... args) throws Exception {
-        FlvRecording flvRecording = new FlvRecording(23129573, biliBiliService, httpClientService, MAX_SIZE);
+        FlvRecording flvRecording = new FlvRecording(23089796, biliBiliService, httpClientService, MAX_SIZE);
         new Thread(flvRecording).start();
     }
 }

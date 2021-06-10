@@ -1,6 +1,7 @@
 package top.ccxxh.live.service;
 
 import com.alibaba.fastjson.JSONObject;
+import top.ccxxh.live.po.RoomInfo;
 
 /**
  * @author qing
@@ -11,7 +12,7 @@ public interface LiveService {
      * @param id 房间Id
      * @return JSONObject
      */
-    JSONObject getRoomInfo(Integer id);
+    RoomInfo getRoomInfo(Integer id);
 
     /**
      * 获取直播连接
