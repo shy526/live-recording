@@ -25,7 +25,7 @@ public class FlvRecording extends AbsFlvRecording {
     private final static SimpleDateFormat DATA_FORMAT_2 = new SimpleDateFormat("HH-mm-ss");
     private final static String SUFFIX = ".flv";
     private final byte[] buff = new byte[1024 * 4];
-
+    private final static int MONITOR_TIME=1000*10;
 
     public FlvRecording(Integer roomId, LiveService liveService, HttpClientService httpClientService, long maxSize) {
         super(roomId, maxSize);
@@ -43,14 +43,14 @@ public class FlvRecording extends AbsFlvRecording {
 
     @Override
     public void recording() {
-        if (!liveService.getLiveStatus(getRoomId())) {
-            log.info("{}:未开播",getRoomId());
+        final Date monitorStartTime = new Date();
+        for (; !liveService.getLiveStatus(getRoomId()); ) {
             try {
-                Thread.sleep(10000);
+                Thread.sleep(MONITOR_TIME);
+                log.info("{}:未开播-{}",getRoomId(),monitorStartTime);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            recording();
         }
         boolean flag = false;
         addFileIndex();
@@ -88,8 +88,9 @@ public class FlvRecording extends AbsFlvRecording {
             log.info("{}:over", path);
             addPathList(path);
         }
-        if (flag) {
-            recording();
+        if (!flag) {
+            log.info("{}:等待重新开播",getRoomId());
         }
+        recording();
     }
 }
