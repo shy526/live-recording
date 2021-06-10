@@ -22,6 +22,7 @@ import java.util.Date;
 public class FlvRecording extends AbsFlvRecording {
     private final static Logger log = LoggerFactory.getLogger(FlvRecording.class);
     private final static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    private final static SimpleDateFormat DATA_FORMAT_2 = new SimpleDateFormat("HH-mm-ss");
     private final static String SUFFIX = ".flv";
     private final byte[] buff = new byte[1024 * 4];
 
@@ -43,7 +44,13 @@ public class FlvRecording extends AbsFlvRecording {
     @Override
     public void recording() {
         if (!liveService.getLiveStatus(getRoomId())) {
-            return;
+            log.info("{}:未开播",getRoomId());
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            recording();
         }
         boolean flag = false;
         addFileIndex();
@@ -76,7 +83,7 @@ public class FlvRecording extends AbsFlvRecording {
         if (tempFile.length() <= 0) {
             tempFile.delete();
         } else {
-            String path = String.format(file, DATA_FORMAT.format(new Date()));
+            String path = String.format(file, DATA_FORMAT_2.format(new Date()));
             tempFile.renameTo(new File(path));
             log.info("{}:over", path);
             addPathList(path);
