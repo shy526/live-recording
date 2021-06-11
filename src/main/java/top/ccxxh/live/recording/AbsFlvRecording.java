@@ -98,6 +98,9 @@ public abstract class AbsFlvRecording implements Runnable {
     public void resetNow() {
         now = 0;
     }
+    public void resetFileIndex() {
+        fileIndex = 0;
+    }
 
     public void addFileIndex() {
         fileIndex++;

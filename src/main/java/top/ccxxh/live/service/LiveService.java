@@ -1,6 +1,5 @@
 package top.ccxxh.live.service;
 
-import com.alibaba.fastjson.JSONObject;
 import top.ccxxh.live.po.RoomInfo;
 
 /**

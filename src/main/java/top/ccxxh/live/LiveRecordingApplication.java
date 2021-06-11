@@ -11,6 +11,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
+import top.ccxxh.live.po.RoomInfo;
 import top.ccxxh.live.service.LiveService;
 import top.ccxxh.live.recording.FlvRecording;
 
@@ -38,7 +39,8 @@ public class LiveRecordingApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        FlvRecording flvRecording = new FlvRecording(23089796, biliBiliService, httpClientService, MAX_SIZE);
+        final RoomInfo roomInfo = biliBiliService.getRoomInfo(22528847);
+        FlvRecording flvRecording = new FlvRecording(22528847, biliBiliService, httpClientService, MAX_SIZE);
         new Thread(flvRecording).start();
     }
 }
