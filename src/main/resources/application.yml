@@ -14,3 +14,9 @@ http:
         idleTime: 4000
         initialDelay: 4000
         delay: 4000
+live:
+  bili:
+    - 22528847
+  mis:
+    - 109896001
+    - 11432673

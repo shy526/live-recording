@@ -67,7 +67,6 @@ public class BiliBiliServiceImpl implements LiveService {
     public Boolean getLiveStatus(Integer id) {
         HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_INIT_URL, id));
         JSONObject result = getJson(httpResult);
-        log.info(result.toJSONString());
         return result.getIntValue(KEY_LIVE_STATUS) == LIVE;
     }
 
