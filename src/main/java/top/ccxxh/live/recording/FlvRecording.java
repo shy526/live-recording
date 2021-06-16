@@ -10,10 +10,7 @@ import top.ccxh.httpclient.service.HttpClientService;
 import top.ccxxh.live.po.RoomInfo;
 import top.ccxxh.live.service.LiveService;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -60,13 +57,11 @@ public class FlvRecording extends AbsFlvRecording {
         setNowPath(tempPath);
         String livePayUrl = liveService.getLivePayUrl(getRoomId());
         log.info("start:{}", livePayUrl);
-        BufferedInputStream liveIn = null;
         try (
                 HttpResult httpResult = httpClientService.get(livePayUrl);
-                CloseableHttpResponse response = httpResult.getResponse();
+                InputStream liveIn = new BufferedInputStream(httpResult.getResponse().getEntity().getContent());
                 BufferedOutputStream fileOut = new BufferedOutputStream(new FileOutputStream(tempPath))
         ) {
-            liveIn = new BufferedInputStream(response.getEntity().getContent());
             int len = -1;
             resetNow();
             while ((len = liveIn.read(buff)) != -1) {
@@ -79,9 +74,9 @@ public class FlvRecording extends AbsFlvRecording {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        IOUtils.close(liveIn);
         final File tempFile = new File(tempPath);
         if (tempFile.length() <= 0) {
+            log.info("{}:delete", tempPath);
             tempFile.delete();
         } else {
             String path = String.format(file, DATA_FORMAT_2.format(new Date()));
@@ -89,6 +84,8 @@ public class FlvRecording extends AbsFlvRecording {
             log.info("{}:over", path);
             addPathList(path);
         }
+
+        //网络异常或主播关播时 重置参数
         if (!flag) {
             resetFileIndex();
             log.info("{}:等待重新开播", roomInfo.getuName());

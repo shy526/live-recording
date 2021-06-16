@@ -1,22 +1,15 @@
 package top.ccxxh.live;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
 import top.ccxxh.live.po.RoomInfo;
-import top.ccxxh.live.service.LiveService;
 import top.ccxxh.live.recording.FlvRecording;
-
-import java.util.HashMap;
-import java.util.Map;
+import top.ccxxh.live.service.LiveService;
 
 /**
  * @author qing
@@ -39,8 +32,8 @@ public class LiveRecordingApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        final RoomInfo roomInfo = biliBiliService.getRoomInfo(22528847);
-        FlvRecording flvRecording = new FlvRecording(22528847, biliBiliService, httpClientService, MAX_SIZE);
+        final RoomInfo roomInfo = biliBiliService.getRoomInfo(23144188);
+        FlvRecording flvRecording = new FlvRecording(23144188, biliBiliService, httpClientService, MAX_SIZE);
         new Thread(flvRecording).start();
     }
 }

@@ -60,7 +60,7 @@ public class BiliBiliServiceImpl implements LiveService {
         JSONObject result = getJson(httpResult);
         JSONArray jsonArray = result.getJSONArray(KEY_D_URL);
         return jsonArray.getJSONObject(0).getString(KEY_URL);
-   /*     */
+        /*     */
     }
 
     @Override
@@ -74,13 +74,14 @@ public class BiliBiliServiceImpl implements LiveService {
     private JSONObject getJson(HttpResult httpResult) {
         String entityStr = httpResult.getEntityStr();
         JSONObject result = JSON.parseObject(entityStr);
-        return result.getJSONObject(KEY_DATA);
+
+        return result != null ? result.getJSONObject(KEY_DATA) : null;
     }
 
     private String newGetLivePayUrl(Integer id) {
         Map<String, String> header = new HashMap<>();
         header.put("Host", "api.live.bilibili.com");
-        HttpResult httpResult = httpClientService.get(String.format(PAY_URL,id), null, header);
+        HttpResult httpResult = httpClientService.get(String.format(PAY_URL, id), null, header);
         final JSONObject data = getJson(httpResult);
         final JSONArray stream = data.getJSONObject("playurl_info").getJSONObject("playurl").getJSONArray("stream");
         final JSONObject item = stream.getJSONObject(0);
