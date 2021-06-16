@@ -61,7 +61,7 @@ public class MisServiceImpl implements LiveService {
         JSONObject anchorInfo = json.getJSONObject("creator");
         result.setRoomTitle(roomInfo.getString("name"));
         result.setRoomId(roomInfo.getInteger("room_id"));
-        result.setLiveStatus(roomInfo.getJSONObject("status").getInteger("open"));
+        result.setSource("mis");
         result.setuId(roomInfo.getInteger("creator_id"));
         result.setuName(anchorInfo.getString("username"));
         return result;

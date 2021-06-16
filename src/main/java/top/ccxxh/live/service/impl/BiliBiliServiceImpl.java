@@ -47,10 +47,9 @@ public class BiliBiliServiceImpl implements LiveService {
         JSONObject anchorInfo = json.getJSONObject("anchor_info").getJSONObject("base_info");
         result.setRoomTitle(roomInfo.getString("title"));
         result.setRoomId(roomInfo.getInteger("room_id"));
-        result.setLiveStatus(roomInfo.getInteger("live_status"));
+        result.setSource("bili");
         result.setuId(roomInfo.getInteger("uid"));
         result.setuName(anchorInfo.getString("uname"));
-        result.setGender(anchorInfo.getString("gender"));
         return result;
     }
 

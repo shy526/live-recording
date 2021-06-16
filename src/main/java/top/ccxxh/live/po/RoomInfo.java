@@ -1,17 +1,24 @@
 package top.ccxxh.live.po;
 
+import java.io.Serializable;
+
 /**
  * 房间信息
+ *
  * @author qing
  */
-public class RoomInfo {
+public class RoomInfo implements Serializable {
+
+    public RoomInfo( ) { }
+    public RoomInfo(Integer roomId) {
+        this.roomId = roomId;
+    }
+
     private Integer uId;
     private Integer roomId;
     private String roomTitle;
-    private Integer liveStatus;
-    private String categoryStr;
+    private String source;
     private String uName;
-    private String gender;
 
     public Integer getuId() {
         return uId;
@@ -37,20 +44,12 @@ public class RoomInfo {
         this.roomTitle = roomTitle;
     }
 
-    public Integer getLiveStatus() {
-        return liveStatus;
+    public String getSource() {
+        return source;
     }
 
-    public void setLiveStatus(Integer liveStatus) {
-        this.liveStatus = liveStatus;
-    }
-
-    public String getCategoryStr() {
-        return categoryStr;
-    }
-
-    public void setCategoryStr(String categoryStr) {
-        this.categoryStr = categoryStr;
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getuName() {
@@ -59,13 +58,5 @@ public class RoomInfo {
 
     public void setuName(String uName) {
         this.uName = uName;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
     }
 }

@@ -1,8 +1,12 @@
 package top.ccxxh.live.recording;
 
+import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.ccxh.httpclient.service.HttpClientService;
 import top.ccxh.httpclient.tool.ThreadPoolUtils;
+import top.ccxxh.live.po.RoomInfo;
+import top.ccxxh.live.service.LiveService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -17,15 +21,14 @@ public abstract class AbsFlvRecording implements Runnable {
 
     private final static Logger log = LoggerFactory.getLogger(AbsFlvRecording.class);
 
-    public AbsFlvRecording(int roomId, long maxSize) {
-        this.roomId = roomId;
+    public AbsFlvRecording(RoomInfo roomInfo,Long maxSize, LiveService liveService, HttpClientService httpClientService) {
         this.maxSize = maxSize;
+        this.liveService = liveService;
+        this.roomInfo = roomInfo;
+        this.httpClientService = httpClientService;
     }
 
-    /**
-     * 房间号
-     */
-    private final Integer roomId;
+
 
     /**
      * 文件最大容量
@@ -51,6 +54,15 @@ public abstract class AbsFlvRecording implements Runnable {
     private boolean stop = false;
     private String nowPath;
 
+    /**
+     * 处理live的服务
+     */
+    protected final LiveService liveService;
+    protected final HttpClientService httpClientService;
+    /**
+     * 房间信息
+     */
+    protected  RoomInfo roomInfo;
     public String getNowPath() {
         return nowPath;
     }
@@ -59,9 +71,6 @@ public abstract class AbsFlvRecording implements Runnable {
         this.nowPath = nowPath;
     }
 
-    public Integer getRoomId() {
-        return roomId;
-    }
 
     public long getMaxSize() {
         return maxSize;
@@ -117,7 +126,9 @@ public abstract class AbsFlvRecording implements Runnable {
 
     @Override
     public void run() {
-        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = ThreadPoolUtils.getScheduledThreadPoolExecutor(roomId.toString(), 1);
+         RoomInfo roomInfo = liveService.getRoomInfo(this.roomInfo.getRoomId());
+         this.roomInfo=roomInfo!=null ?roomInfo:this.roomInfo;
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = ThreadPoolUtils.getScheduledThreadPoolExecutor(roomInfo.getRoomId().toString(), 1);
         scheduledThreadPoolExecutor.scheduleWithFixedDelay(
                 this::sayHe, 10000, 30000, TimeUnit.MILLISECONDS);
         recording();
@@ -132,31 +143,35 @@ public abstract class AbsFlvRecording implements Runnable {
     public abstract void recording();
 
     public void sayHe() {
+        Integer roomId = roomInfo.getRoomId();
+        String jsonStr= JSON.toJSONString(roomInfo);
         String infoStr = "\n" +
-                "-----------------{}-------------------- \n" +
+                "-----------------{}------------------- \n" +
                 "roomId:{},total:{},fileIndex:{}:stop:{} \n";
         boolean stopFlag = stop;
         infoStr += stop ? "" : "{}:{}/{}-----{} \n";
         boolean emptyFlag = pathList.isEmpty();
         infoStr += emptyFlag ? "" : "recordingPaths:{} \n";
-        infoStr += "-----------------{}--------------------";
+        infoStr +=  "-----------------{}------------------- \n";
         if (!stopFlag && !emptyFlag) {
-            log.info(infoStr, roomId, roomId, total, fileIndex, stop,
+            log.info(infoStr,jsonStr,
+                    roomId, total, fileIndex, stop,
                     nowPath, now, maxSize, new BigDecimal(now).divide(new BigDecimal(maxSize), 2, BigDecimal.ROUND_HALF_UP)
                     , pathList,
-                    roomId);
+                    jsonStr);
             return;
         }
         if (!stopFlag) {
-            log.info(infoStr, roomId, roomId, total, fileIndex, stop,
+            log.info(infoStr,jsonStr,
+                    roomId, total, fileIndex, stop,
                     nowPath, now, maxSize, new BigDecimal(now).divide(new BigDecimal(maxSize), 2, BigDecimal.ROUND_HALF_UP),
-                    roomId);
+                    jsonStr);
             return;
         }
         if (!emptyFlag) {
-            log.info(infoStr, roomId, roomId, total, fileIndex, stop,
+            log.info(infoStr,jsonStr, roomId, total, fileIndex, stop,
                     pathList,
-                    roomId);
+                    jsonStr);
         }
 
     }

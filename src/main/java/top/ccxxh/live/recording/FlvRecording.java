@@ -26,34 +26,25 @@ public class FlvRecording extends AbsFlvRecording {
     private final static int MONITOR_TIME = 1000 * 20;
 
     public FlvRecording(Integer roomId, LiveService liveService, HttpClientService httpClientService, long maxSize) {
-        super(roomId, maxSize);
-        this.liveService = liveService;
-        this.httpClientService = httpClientService;
+        super(new RoomInfo(roomId), maxSize, liveService, httpClientService);
     }
-
-
-    /**
-     * 处理live的服务
-     */
-    private final LiveService liveService;
-    private final HttpClientService httpClientService;
 
 
     @Override
     public void recording() {
-        final Date monitorStartTime = new Date();
-        RoomInfo roomInfo = liveService.getRoomInfo(getRoomId());
-        log.info(JSON.toJSONString(roomInfo));
-        for (; !liveService.getLiveStatus(getRoomId()); ) {
-            log.info("{}:未开播-{}", roomInfo.getuName(),DATA_FORMAT.format(monitorStartTime) );
-            try { Thread.sleep(MONITOR_TIME); } catch (InterruptedException e) {}
+        for (; !liveService.getLiveStatus(roomInfo.getRoomId()); ) {
+            log.info("{}:未开播", roomInfo.getuName());
+            try {
+                Thread.sleep(MONITOR_TIME);
+            } catch (InterruptedException e) {
+            }
         }
         boolean flag = false;
         addFileIndex();
-        String file = roomInfo.getuName()+DATA_FORMAT.format(new Date()) + "の%s" + "[" + getFileIndex() + "]" + SUFFIX;
+        String file = roomInfo.getuName() + DATA_FORMAT.format(new Date()) + "の%s" + "[" + getFileIndex() + "]" + SUFFIX;
         String tempPath = file + ".temp";
         setNowPath(tempPath);
-        String livePayUrl = liveService.getLivePayUrl(getRoomId());
+        String livePayUrl = liveService.getLivePayUrl(roomInfo.getRoomId());
         log.info("start:{}", livePayUrl);
         try (
                 HttpResult httpResult = httpClientService.get(livePayUrl);
