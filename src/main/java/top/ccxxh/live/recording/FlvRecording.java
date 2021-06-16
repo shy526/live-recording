@@ -32,7 +32,7 @@ public class FlvRecording extends AbsFlvRecording {
 
     @Override
     public void recording() {
-        for (; !liveService.getLiveStatus(roomInfo.getRoomId()); ) {
+        for (; !liveService.getLiveStatus(roomInfo.getRoomId())&&!getStop(); ) {
             log.info("{}:未开播", roomInfo.getuName());
             try {
                 Thread.sleep(MONITOR_TIME);
@@ -53,7 +53,7 @@ public class FlvRecording extends AbsFlvRecording {
         ) {
             int len = -1;
             resetNow();
-            while ((len = liveIn.read(buff)) != -1) {
+            while ((len = liveIn.read(buff)) != -1&&!getStop()) {
                 fileOut.write(buff, 0, len);
                 if (addNow(len)) {
                     flag = true;
@@ -73,12 +73,14 @@ public class FlvRecording extends AbsFlvRecording {
             log.info("{}:over", path);
             addPathList(path);
         }
-
         //网络异常或主播关播时 重置参数
         if (!flag) {
             resetFileIndex();
             log.info("{}:等待重新开播", roomInfo.getuName());
         }
-        recording();
+        if (!getStop()){
+            recording();
+        }
+
     }
 }

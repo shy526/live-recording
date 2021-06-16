@@ -93,7 +93,7 @@ public abstract class AbsFlvRecording implements Runnable {
         return now;
     }
 
-    public boolean isStop() {
+    public boolean getStop() {
         return stop;
     }
 
@@ -132,7 +132,6 @@ public abstract class AbsFlvRecording implements Runnable {
         scheduledThreadPoolExecutor.scheduleWithFixedDelay(
                 this::sayHe, 10000, 30000, TimeUnit.MILLISECONDS);
         recording();
-        stop();
         scheduledThreadPoolExecutor.shutdown();
         sayHe();
     }
