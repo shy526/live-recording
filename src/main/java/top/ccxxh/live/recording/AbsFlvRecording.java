@@ -24,6 +24,7 @@ public abstract class AbsFlvRecording implements Runnable {
 
     private final static Logger log = LoggerFactory.getLogger(AbsFlvRecording.class);
     private final static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("HH-mm-ss");
+
     public AbsFlvRecording(RoomInfo roomInfo,Long maxSize, LiveService liveService, HttpClientService httpClientService) {
         this.maxSize = maxSize;
         this.liveService = liveService;
@@ -66,6 +67,9 @@ public abstract class AbsFlvRecording implements Runnable {
      * 房间信息
      */
     protected  RoomInfo roomInfo;
+
+    protected final byte[] buff = new byte[1024 * 4];
+
     public String getNowPath() {
         return nowPath;
     }
@@ -212,6 +216,7 @@ public abstract class AbsFlvRecording implements Runnable {
             } catch (InterruptedException e) {
             }
         }
+        addFileIndex();
     }
 
 }

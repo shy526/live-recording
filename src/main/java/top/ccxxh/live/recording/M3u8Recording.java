@@ -26,7 +26,7 @@ import java.util.Set;
 public class M3u8Recording extends AbsFlvRecording {
     private final static Logger log = LoggerFactory.getLogger(M3u8Recording.class);
     private final static String SUFFIX = ".ts";
-    private final byte[] buff = new byte[1024 * 4];
+
     private final static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
     private final Set<String> read = new HashSet<>();
 
@@ -40,7 +40,6 @@ public class M3u8Recording extends AbsFlvRecording {
     public void recording() {
         before(MONITOR_TIME);
         boolean flag = false;
-        addFileIndex();
         String file = roomInfo.getuName() + DATA_FORMAT.format(new Date()) + "の%s" + "[" + getFileIndex() + "]" + SUFFIX;
         String tempPath = file + ".temp";
         setNowPath(tempPath);
@@ -58,7 +57,7 @@ public class M3u8Recording extends AbsFlvRecording {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }finally {
             read.clear();
         }
@@ -92,7 +91,6 @@ public class M3u8Recording extends AbsFlvRecording {
                     HttpResult httpResult = httpClientService.get(urlPath + item);
                     InputStream liveIn = new EofBufferedInputStream(httpResult.getResponse().getEntity().getContent());
             ) {
-                log.info("payUrl:{}", urlPath + item);
                 int len = -1;
                 while ((len = liveIn.read(buff)) != -1 && !getStop()) {
                     addNow(len);
@@ -112,7 +110,7 @@ public class M3u8Recording extends AbsFlvRecording {
             StringBuilder urlStr = new StringBuilder(url.getProtocol()).append("://").append(url.getHost()).append(url.getPath());
             urlPath = urlStr.substring(0, urlStr.lastIndexOf("/") + 1);
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return urlPath;
     }
@@ -127,7 +125,7 @@ public class M3u8Recording extends AbsFlvRecording {
                 result.put(split[0], split[1]);
             }
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return result;
     }

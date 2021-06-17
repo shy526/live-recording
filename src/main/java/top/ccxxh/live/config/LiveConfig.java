@@ -14,6 +14,15 @@ import java.util.List;
 public class LiveConfig {
     private List<Integer> bili;
     private List<Integer> mis;
+    private String rootPath;
+
+    public String getRootPath() {
+        return rootPath;
+    }
+
+    public void setRootPath(String rootPath) {
+        this.rootPath = rootPath;
+    }
 
     public List<Integer> getBili() {
         return bili;
