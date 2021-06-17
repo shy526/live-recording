@@ -57,17 +57,18 @@ public class BiliBiliServiceImpl implements LiveService {
     public Boolean getLiveStatus(Integer id) {
         HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_INIT_URL, id));
         JSONObject result = getJson(httpResult);
-        if (result==null){
+        if (result == null) {
             //保障上面接口被拦截时能正常获取直播间状态后续应该加入代理
-             httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
-            result=getJson(httpResult).getJSONObject("room_info");
+            httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
+            result = getJson(httpResult).getJSONObject("room_info");
         }
         return result.getIntValue(KEY_LIVE_STATUS) == LIVE;
     }
 
     @Override
     public String getM3u8Ulr(Integer id) {
-        return null;
+        final JSONArray stream = getStream(id);
+        return getPayUrl(stream.getJSONObject(1));
     }
 
     @Override
@@ -85,19 +86,27 @@ public class BiliBiliServiceImpl implements LiveService {
         return result != null ? result.getJSONObject(KEY_DATA) : null;
     }
 
-    private String newGetLivePayUrl(Integer id) {
+    private String getNewFlvUrl(Integer id) {
+        final JSONArray stream = getStream(id);
+        return getPayUrl(stream.getJSONObject(0));
+
+    }
+
+    private JSONArray getStream(Integer id) {
         Map<String, String> header = new HashMap<>();
         header.put("Host", "api.live.bilibili.com");
         HttpResult httpResult = httpClientService.get(String.format(PAY_URL, id), null, header);
         final JSONObject data = getJson(httpResult);
-        final JSONArray stream = data.getJSONObject("playurl_info").getJSONObject("playurl").getJSONArray("stream");
-        final JSONObject item = stream.getJSONObject(0);
+        return data.getJSONObject("playurl_info").getJSONObject("playurl").getJSONArray("stream");
+    }
+
+    private String getPayUrl(JSONObject item) {
+
         final JSONObject format = item.getJSONArray("format").getJSONObject(0);
         final JSONObject codec = format.getJSONArray("codec").getJSONObject(0);
         final String baseUrl = codec.getString("base_url");
         final JSONObject urlInfo = codec.getJSONArray("url_info").getJSONObject(0);
         return urlInfo.getString("host") + baseUrl + urlInfo.getString("extra");
-
     }
 
 }
