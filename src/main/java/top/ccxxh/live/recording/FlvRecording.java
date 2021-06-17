@@ -9,7 +9,6 @@ import top.ccxxh.live.po.RoomInfo;
 import top.ccxxh.live.service.LiveService;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -21,7 +20,7 @@ import java.util.Date;
 public class FlvRecording extends AbsFlvRecording {
     private final static Logger log = LoggerFactory.getLogger(FlvRecording.class);
     private final static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
-    private final static SimpleDateFormat DATA_FORMAT_2 = new SimpleDateFormat("HH-mm-ss");
+
     private final static String SUFFIX = ".flv";
     private final byte[] buff = new byte[1024 * 4];
     private final static int MONITOR_TIME = 1000 * 20;
@@ -33,19 +32,13 @@ public class FlvRecording extends AbsFlvRecording {
 
     @Override
     public void recording() {
-        for (; !liveService.getLiveStatus(roomInfo.getRoomId())&&!getStop(); ) {
-            log.info("{}:未开播", roomInfo.getuName());
-            try {
-                Thread.sleep(MONITOR_TIME);
-            } catch (InterruptedException e) {
-            }
-        }
+        before(MONITOR_TIME);
         boolean flag = false;
         addFileIndex();
         String file = roomInfo.getuName() + DATA_FORMAT.format(new Date()) + "の%s" + "[" + getFileIndex() + "]" + SUFFIX;
         String tempPath = file + ".temp";
         setNowPath(tempPath);
-        String livePayUrl = liveService.getLivePayUrl(roomInfo.getRoomId());
+        String livePayUrl = liveService.getFlvUrl(roomInfo.getRoomId());
         log.info("start:{}", livePayUrl);
         try (
                 HttpResult httpResult = httpClientService.get(livePayUrl);
@@ -54,7 +47,7 @@ public class FlvRecording extends AbsFlvRecording {
         ) {
             int len = -1;
             resetNow();
-            while ((len = liveIn.read(buff)) != -1&&!getStop()) {
+            while ((len = liveIn.read(buff)) != -1 && !getStop()) {
                 fileOut.write(buff, 0, len);
                 if (addNow(len)) {
                     flag = true;
@@ -64,26 +57,9 @@ public class FlvRecording extends AbsFlvRecording {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        final File tempFile = new File(tempPath);
-        if (tempFile.length() <= 0) {
-            log.info("{}:delete", tempPath);
-            tempFile.delete();
-        } else {
-            String path = String.format(file, DATA_FORMAT_2.format(new Date()));
-            tempFile.renameTo(new File(path));
-            log.info("{}:over", path);
-            addPathList(path);
-        }
-        //网络异常或主播关播时 重置参数
-        if (!flag) {
-            resetFileIndex();
-            log.info("{}:等待重新开播", roomInfo.getuName());
-        }
-        if (!getStop()){
-            //防止网络异常导致的接口被封
-            try { Thread.sleep(MONITOR_TIME); } catch (InterruptedException e) {}
-            recording();
-        }
+        after(flag, file, tempPath);
 
     }
+
+
 }

@@ -24,6 +24,7 @@ public class MisServiceImpl implements LiveService {
     @Autowired
     private HttpClientService httpClientService;
     private final static int LIVE = 1;
+
     @Override
     public RoomInfo getRoomInfo(Integer id) {
         HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
@@ -31,19 +32,25 @@ public class MisServiceImpl implements LiveService {
     }
 
     @Override
-    public String getLivePayUrl(Integer id) {
-        HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
-         JSONObject json = getJson(httpResult);
-        return json.getJSONObject("room").getJSONObject("channel").getString("flv_pull_url");
-    }
-
-    @Override
     public Boolean getLiveStatus(Integer id) {
         HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
         JSONObject json = getJson(httpResult);
-        return json.getJSONObject("room").getJSONObject("status").getInteger("open").equals(1);
+        return json.getJSONObject("room").getJSONObject("status").getInteger("open").equals(LIVE);
     }
 
+    @Override
+    public String getM3u8Ulr(Integer id) {
+        HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
+        JSONObject json = getJson(httpResult);
+        return json.getJSONObject("room").getJSONObject("channel").getString("hls_pull_url");
+    }
+
+    @Override
+    public String getFlvUrl(Integer id) {
+        HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
+        JSONObject json = getJson(httpResult);
+        return json.getJSONObject("room").getJSONObject("channel").getString("flv_pull_url");
+    }
 
 
     private JSONObject getJson(HttpResult httpResult) {

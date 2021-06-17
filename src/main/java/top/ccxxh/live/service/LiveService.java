@@ -14,16 +14,23 @@ public interface LiveService {
     RoomInfo getRoomInfo(Integer id);
 
     /**
-     * 获取直播连接
-     * @param id 房间Id
-     * @return String
-     */
-    String getLivePayUrl(Integer id);
-
-    /**
      * 是否开播
      * @param id 房间Id
      * @return Boolean
      */
     Boolean getLiveStatus(Integer id);
+
+    /**
+     * 获取m3u8的地址
+     * @param id 房间Id
+     * @return String
+     */
+    String getM3u8Ulr(Integer id);
+
+    /**
+     * 获取flv的地址
+     * @param id 房间Id
+     * @return String
+     */
+    String getFlvUrl(Integer id);
 }

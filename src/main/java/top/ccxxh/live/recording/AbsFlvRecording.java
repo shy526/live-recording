@@ -8,8 +8,11 @@ import top.ccxh.httpclient.tool.ThreadPoolUtils;
 import top.ccxxh.live.po.RoomInfo;
 import top.ccxxh.live.service.LiveService;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbsFlvRecording implements Runnable {
 
     private final static Logger log = LoggerFactory.getLogger(AbsFlvRecording.class);
-
+    private final static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("HH-mm-ss");
     public AbsFlvRecording(RoomInfo roomInfo,Long maxSize, LiveService liveService, HttpClientService httpClientService) {
         this.maxSize = maxSize;
         this.liveService = liveService;
@@ -173,6 +176,42 @@ public abstract class AbsFlvRecording implements Runnable {
                     jsonStr);
         }
 
+    }
+
+    protected void reNameTo(String path,String targetPath){
+        final File tempFile = new File(path);
+        if (tempFile.length() <= 0) {
+            log.info("{}:delete", path);
+            tempFile.delete();
+        } else {
+            String newTargetPath = String.format(targetPath, DATA_FORMAT.format(new Date()));
+            tempFile.renameTo(new File(newTargetPath));
+            log.info("{}:over", newTargetPath);
+            addPathList(newTargetPath);
+        }
+
+    }
+
+    protected void after(boolean flag, String file, String tempPath) {
+        reNameTo(tempPath, file);
+        //网络异常或主播关播时 重置参数
+        if (!flag) {
+            resetFileIndex();
+            log.info("{}:等待重新开播", roomInfo.getuName());
+        }
+        if (!getStop()){
+            recording();
+        }
+    }
+
+    protected void before(long monitorTime ) {
+        for (; !liveService.getLiveStatus(roomInfo.getRoomId()) && !getStop(); ) {
+            log.info("{}:未开播", roomInfo.getuName());
+            try {
+                Thread.sleep(monitorTime);
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
 }

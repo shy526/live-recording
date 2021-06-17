@@ -54,15 +54,6 @@ public class BiliBiliServiceImpl implements LiveService {
     }
 
     @Override
-    public String getLivePayUrl(Integer id) {
-        HttpResult httpResult = httpClientService.get(String.format(OLD_PAY_URL, id));
-        JSONObject result = getJson(httpResult);
-        JSONArray jsonArray = result.getJSONArray(KEY_D_URL);
-        return jsonArray.getJSONObject(0).getString(KEY_URL);
-        /*     */
-    }
-
-    @Override
     public Boolean getLiveStatus(Integer id) {
         HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_INIT_URL, id));
         JSONObject result = getJson(httpResult);
@@ -72,6 +63,19 @@ public class BiliBiliServiceImpl implements LiveService {
             result=getJson(httpResult).getJSONObject("room_info");
         }
         return result.getIntValue(KEY_LIVE_STATUS) == LIVE;
+    }
+
+    @Override
+    public String getM3u8Ulr(Integer id) {
+        return null;
+    }
+
+    @Override
+    public String getFlvUrl(Integer id) {
+        HttpResult httpResult = httpClientService.get(String.format(OLD_PAY_URL, id));
+        JSONObject result = getJson(httpResult);
+        JSONArray jsonArray = result.getJSONArray(KEY_D_URL);
+        return jsonArray.getJSONObject(0).getString(KEY_URL);
     }
 
     private JSONObject getJson(HttpResult httpResult) {

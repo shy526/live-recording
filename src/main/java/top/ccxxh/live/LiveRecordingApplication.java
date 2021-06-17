@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import top.ccxh.httpclient.service.HttpClientService;
 import top.ccxxh.live.config.LiveConfig;
 import top.ccxxh.live.recording.FlvRecording;
+import top.ccxxh.live.recording.M3u8Recording;
 import top.ccxxh.live.service.LiveService;
 
 import java.util.List;
@@ -38,15 +39,15 @@ public class LiveRecordingApplication implements CommandLineRunner {
     }
 
     private final static long VIDEO_MAX_SIZE = (long) ((1000L * 1000L) * 400D);
-    private final static long AUDIO_MAX_SIZE = (long) ((1000L * 1000L) * 40D);
+    private final static long AUDIO_MAX_SIZE = (long) ((1000L * 1000L) * 4D);
 
     @Override
     public void run(String... args) throws Exception {
-        liveRecording(liveConfig.getBili(), biliBiliService,VIDEO_MAX_SIZE);
-        liveRecording(liveConfig.getMis(), misServiceImpl,AUDIO_MAX_SIZE);
+        //flvLiveRecording(liveConfig.getMis(), misServiceImpl,VIDEO_MAX_SIZE);
+        m3u8LiveRecording(liveConfig.getMis(), misServiceImpl,AUDIO_MAX_SIZE);
     }
 
-    private void liveRecording(List<Integer> list, LiveService liveService,long size) {
+    private void flvLiveRecording(List<Integer> list, LiveService liveService,long size) {
         if (list == null || list.isEmpty()) {
             log.info("no roomId list");
             return;
@@ -54,6 +55,17 @@ public class LiveRecordingApplication implements CommandLineRunner {
         for (Integer item : list) {
             final FlvRecording flvRecording = new FlvRecording(item, liveService, httpClientService, size);
             new Thread(flvRecording).start();
+        }
+    }
+
+    private void m3u8LiveRecording(List<Integer> list, LiveService liveService,long size) {
+        if (list == null || list.isEmpty()) {
+            log.info("no roomId list");
+            return;
+        }
+        for (Integer item : list) {
+            final M3u8Recording m3u8Recording = new M3u8Recording(item, liveService, httpClientService, size);
+            new Thread(m3u8Recording).start();
         }
     }
 }
