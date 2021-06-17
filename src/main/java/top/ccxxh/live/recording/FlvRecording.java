@@ -1,16 +1,17 @@
 package top.ccxxh.live.recording;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.util.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
+import top.ccxxh.live.io.EofBufferedInputStream;
 import top.ccxxh.live.po.RoomInfo;
 import top.ccxxh.live.service.LiveService;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -48,7 +49,7 @@ public class FlvRecording extends AbsFlvRecording {
         log.info("start:{}", livePayUrl);
         try (
                 HttpResult httpResult = httpClientService.get(livePayUrl);
-                InputStream liveIn = new BufferedInputStream(httpResult.getResponse().getEntity().getContent());
+                InputStream liveIn = new EofBufferedInputStream(httpResult.getResponse().getEntity().getContent());
                 BufferedOutputStream fileOut = new BufferedOutputStream(new FileOutputStream(tempPath))
         ) {
             int len = -1;
@@ -79,6 +80,8 @@ public class FlvRecording extends AbsFlvRecording {
             log.info("{}:等待重新开播", roomInfo.getuName());
         }
         if (!getStop()){
+            //防止网络异常导致的接口被封
+            try { Thread.sleep(MONITOR_TIME); } catch (InterruptedException e) {}
             recording();
         }
 

@@ -66,6 +66,11 @@ public class BiliBiliServiceImpl implements LiveService {
     public Boolean getLiveStatus(Integer id) {
         HttpResult httpResult = httpClientService.get(String.format(ROOM_INFO_INIT_URL, id));
         JSONObject result = getJson(httpResult);
+        if (result==null){
+            //保障上面接口被拦截时能正常获取直播间状态后续应该加入代理
+             httpResult = httpClientService.get(String.format(ROOM_INFO_URL, id));
+            result=getJson(httpResult).getJSONObject("room_info");
+        }
         return result.getIntValue(KEY_LIVE_STATUS) == LIVE;
     }
 
