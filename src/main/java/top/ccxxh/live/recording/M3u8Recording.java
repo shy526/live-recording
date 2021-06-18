@@ -53,18 +53,17 @@ public class M3u8Recording extends AbsFlvRecording {
                     flag = true;
                     break;
                 }
-                Thread.sleep(4000);
+                Thread.sleep(2000);
             }
 
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
-        }finally {
+            log.error(e.getMessage(), e);
+        } finally {
             read.clear();
         }
         after(flag, file, tempPath);
 
     }
-
 
 
     /**
@@ -80,17 +79,24 @@ public class M3u8Recording extends AbsFlvRecording {
             return true;
         }
         M3u8 m3u8 = M3u8.parse(livePayUrl, m3u8Str);
-        String urlPath = getUrl(livePayUrl);
         for (String item : m3u8.getPayList()) {
-            if (read.contains(item)) {
-                continue;
-            } else {
-                read.add(item);
+            //过滤
+            try {
+                URL url = new URL(item);
+                if (read.contains(url.getPath())) {
+                    continue;
+                } else {
+                    read.add(url.getPath());
+                }
+            } catch (MalformedURLException e) {
+                log.info(e.getMessage(), e);
             }
+
             try (
-                    HttpResult httpResult = httpClientService.get(urlPath + item);
+                    HttpResult httpResult = httpClientService.get(item);
                     InputStream liveIn = new EofBufferedInputStream(httpResult.getResponse().getEntity().getContent());
             ) {
+                log.info(item);
                 int len = -1;
                 while ((len = liveIn.read(buff)) != -1 && !getStop()) {
                     addNow(len);
@@ -103,17 +109,6 @@ public class M3u8Recording extends AbsFlvRecording {
         return false;
     }
 
-    private String getUrl(String livePayUrl) {
-        String urlPath = null;
-        try {
-            URL url = new URL(livePayUrl);
-            StringBuilder urlStr = new StringBuilder(url.getProtocol()).append("://").append(url.getHost()).append(url.getPath());
-            urlPath = urlStr.substring(0, urlStr.lastIndexOf("/") + 1);
-        } catch (MalformedURLException e) {
-            log.error(e.getMessage(),e);
-        }
-        return urlPath;
-    }
 
     private JSONObject getParams(String livePayUrl) {
         JSONObject result = new JSONObject();
@@ -125,7 +120,7 @@ public class M3u8Recording extends AbsFlvRecording {
                 result.put(split[0], split[1]);
             }
         } catch (MalformedURLException e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
         }
         return result;
     }

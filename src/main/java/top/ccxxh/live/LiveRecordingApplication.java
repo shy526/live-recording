@@ -43,8 +43,8 @@ public class LiveRecordingApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        flvLiveRecording(liveConfig.getBili(), biliBiliService,VIDEO_MAX_SIZE);
-        m3u8LiveRecording(liveConfig.getMis(), misServiceImpl,AUDIO_MAX_SIZE);
+        m3u8LiveRecording(liveConfig.getBili(), biliBiliService,VIDEO_MAX_SIZE);
+       // m3u8LiveRecording(liveConfig.getMis(), misServiceImpl,AUDIO_MAX_SIZE);
     }
 
     private void flvLiveRecording(List<Integer> list, LiveService liveService,long size) {

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
+import top.ccxxh.live.po.M3u8;
 import top.ccxxh.live.po.RoomInfo;
 import top.ccxxh.live.service.LiveService;
 
@@ -67,8 +68,12 @@ public class BiliBiliServiceImpl implements LiveService {
 
     @Override
     public String getM3u8Ulr(Integer id) {
-        final JSONArray stream = getStream(id);
-        return getPayUrl(stream.getJSONObject(1));
+        JSONArray stream = getStream(id);
+        String payUrl = getPayUrl(stream.getJSONObject(1));
+        HttpResult httpResult = httpClientService.get(payUrl);
+        String entityStr = httpResult.getEntityStr();
+        M3u8 m3u8 =M3u8.parse(payUrl, entityStr);
+        return m3u8.getPayList().get(0);
     }
 
     @Override
