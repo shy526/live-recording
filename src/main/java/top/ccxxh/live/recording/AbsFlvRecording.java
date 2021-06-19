@@ -63,7 +63,7 @@ public abstract class AbsFlvRecording implements Runnable {
      */
     protected final LiveService liveService;
     protected final HttpClientService httpClientService;
-    private final static int MONITOR_TIME = 1000 * 5;
+    private final static int MONITOR_TIME = 1000 * 10;
     /**
      * 房间信息
      */
