@@ -63,6 +63,7 @@ public abstract class AbsFlvRecording implements Runnable {
      */
     protected final LiveService liveService;
     protected final HttpClientService httpClientService;
+    private final static int MONITOR_TIME = 1000 * 5;
     /**
      * 房间信息
      */
@@ -208,11 +209,11 @@ public abstract class AbsFlvRecording implements Runnable {
         }
     }
 
-    protected void before(long monitorTime ) {
+    protected void before() {
         for (; !liveService.getLiveStatus(roomInfo.getRoomId()) && !getStop(); ) {
             log.info("{}:未开播", roomInfo.getuName());
             try {
-                Thread.sleep(monitorTime);
+                Thread.sleep(MONITOR_TIME);
             } catch (InterruptedException e) {
             }
         }

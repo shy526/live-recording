@@ -22,7 +22,7 @@ public class FlvRecording extends AbsFlvRecording {
     private final static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
 
     private final static String SUFFIX = ".flv";
-    private final static int MONITOR_TIME = 1000 * 20;
+
 
     public FlvRecording(Integer roomId, LiveService liveService, HttpClientService httpClientService, long maxSize) {
         super(new RoomInfo(roomId), maxSize, liveService, httpClientService);
@@ -31,7 +31,7 @@ public class FlvRecording extends AbsFlvRecording {
 
     @Override
     public void recording() {
-        before(MONITOR_TIME);
+        before();
         boolean flag = false;
         String file = roomInfo.getuName() + DATA_FORMAT.format(new Date()) + "の%s" + "[" + getFileIndex() + "]" + SUFFIX;
         String tempPath = file + ".temp";

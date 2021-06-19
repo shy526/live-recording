@@ -34,11 +34,11 @@ public class M3u8Recording extends AbsFlvRecording {
         super(new RoomInfo(roomId), maxSize, liveService, httpClientService);
     }
 
-    private final static int MONITOR_TIME = 1000 * 20;
+
 
     @Override
     public void recording() {
-        before(MONITOR_TIME);
+        before();
         boolean flag = false;
         String file = roomInfo.getuName() + DATA_FORMAT.format(new Date()) + "の%s" + "[" + getFileIndex() + "]" + SUFFIX;
         String tempPath = file + ".temp";
