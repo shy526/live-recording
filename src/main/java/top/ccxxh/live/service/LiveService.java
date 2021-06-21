@@ -1,5 +1,6 @@
 package top.ccxxh.live.service;
 
+import top.ccxxh.live.constants.LiveSourceEnum;
 import top.ccxxh.live.po.RoomInfo;
 import top.ccxxh.live.recording.AbsRecording;
 
@@ -39,7 +40,7 @@ public interface LiveService {
      * 指定源
      * @return 指定源
      */
-    String getSource();
+    LiveSourceEnum getSource();
 
     /**
      * 指定录制方式

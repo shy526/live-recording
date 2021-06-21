@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
+import top.ccxxh.live.constants.LiveSourceEnum;
 import top.ccxxh.live.po.M3u8;
 import top.ccxxh.live.po.RoomInfo;
 import top.ccxxh.live.recording.AbsRecording;
@@ -87,8 +88,8 @@ public class BiliBiliServiceImpl implements LiveService {
     }
 
     @Override
-    public String getSource() {
-        return "bili";
+    public LiveSourceEnum getSource() {
+        return LiveSourceEnum.BILI_BILI;
     }
 
     @Override

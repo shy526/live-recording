@@ -1,5 +1,7 @@
 package top.ccxxh.live.po;
 
+import top.ccxxh.live.constants.LiveSourceEnum;
+
 import java.io.Serializable;
 
 /**
@@ -13,7 +15,7 @@ public class RoomInfo implements Serializable {
     public RoomInfo(Integer roomId) {
         this.roomId = roomId;
     }
-    public RoomInfo(Integer roomId,String source) {
+    public RoomInfo(Integer roomId,LiveSourceEnum source) {
         this.roomId = roomId;
         this.source = source;
     }
@@ -21,7 +23,7 @@ public class RoomInfo implements Serializable {
     private Integer uId;
     private Integer roomId;
     private String roomTitle;
-    private String source;
+    private LiveSourceEnum source;
     private String uName;
 
     public Integer getuId() {
@@ -48,11 +50,11 @@ public class RoomInfo implements Serializable {
         this.roomTitle = roomTitle;
     }
 
-    public String getSource() {
+    public LiveSourceEnum getSource() {
         return source;
     }
 
-    public void setSource(String source) {
+    public void setSource(LiveSourceEnum source) {
         this.source = source;
     }
 
