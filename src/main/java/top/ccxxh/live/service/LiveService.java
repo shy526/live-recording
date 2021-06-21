@@ -1,6 +1,7 @@
 package top.ccxxh.live.service;
 
 import top.ccxxh.live.po.RoomInfo;
+import top.ccxxh.live.recording.AbsRecording;
 
 /**
  * @author qing
@@ -33,4 +34,22 @@ public interface LiveService {
      * @return String
      */
     String getFlvUrl(Integer id);
+
+    /**
+     * 指定源
+     * @return 指定源
+     */
+    String getSource();
+
+    /**
+     * 指定录制方式
+     * @return Class<? extends AbsRecording>
+     */
+    Class<? extends AbsRecording> getRecording();
+
+    /**
+     * 分片大小
+     * @return long
+     */
+    long getSplitSize();
 }

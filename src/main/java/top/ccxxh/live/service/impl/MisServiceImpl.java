@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
 import top.ccxxh.live.po.RoomInfo;
+import top.ccxxh.live.recording.AbsRecording;
+import top.ccxxh.live.recording.M3u8Recording;
 import top.ccxxh.live.service.LiveService;
 
 /**
@@ -52,6 +54,21 @@ public class MisServiceImpl implements LiveService {
         return json.getJSONObject("room").getJSONObject("channel").getString("flv_pull_url");
     }
 
+    @Override
+    public String getSource() {
+        return "mis";
+    }
+
+    @Override
+    public Class<? extends AbsRecording> getRecording() {
+        return M3u8Recording.class;
+    }
+
+    @Override
+    public long getSplitSize() {
+        return (long) ((1000L * 1000L) * 40D);
+    }
+
 
     private JSONObject getJson(HttpResult httpResult) {
         String entityStr = httpResult.getEntityStr();
@@ -68,7 +85,7 @@ public class MisServiceImpl implements LiveService {
         JSONObject anchorInfo = json.getJSONObject("creator");
         result.setRoomTitle(roomInfo.getString("name"));
         result.setRoomId(roomInfo.getInteger("room_id"));
-        result.setSource("mis");
+        result.setSource(getSource());
         result.setuId(roomInfo.getInteger("creator_id"));
         result.setuName(anchorInfo.getString("username"));
         return result;

@@ -17,7 +17,7 @@ import java.util.Date;
 /**
  * @author qing
  */
-public class FlvRecording extends AbsFlvRecording {
+public class FlvRecording extends AbsRecording {
     private final static Logger log = LoggerFactory.getLogger(FlvRecording.class);
     private final static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
 
@@ -25,7 +25,7 @@ public class FlvRecording extends AbsFlvRecording {
 
 
     public FlvRecording(Integer roomId, LiveService liveService, HttpClientService httpClientService, long maxSize) {
-        super(new RoomInfo(roomId), maxSize, liveService, httpClientService);
+        super(new RoomInfo(roomId, liveService.getSource()), maxSize, liveService, httpClientService);
     }
 
 
@@ -45,7 +45,7 @@ public class FlvRecording extends AbsFlvRecording {
         ) {
             int len = -1;
             resetNow();
-            while ((len = liveIn.read(buff)) != -1 && !getStop()) {
+            while ((len = liveIn.read(buff)) != -1 && !getSkip()) {
                 fileOut.write(buff, 0, len);
                 if (addNow(len)) {
                     flag = true;

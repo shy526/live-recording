@@ -13,6 +13,10 @@ public class RoomInfo implements Serializable {
     public RoomInfo(Integer roomId) {
         this.roomId = roomId;
     }
+    public RoomInfo(Integer roomId,String source) {
+        this.roomId = roomId;
+        this.source = source;
+    }
 
     private Integer uId;
     private Integer roomId;

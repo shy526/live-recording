@@ -20,18 +20,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author qing
  */
-public abstract class AbsFlvRecording implements Runnable {
+public abstract class AbsRecording extends Thread {
 
-    private final static Logger log = LoggerFactory.getLogger(AbsFlvRecording.class);
+    private final static Logger log = LoggerFactory.getLogger(AbsRecording.class);
     private final static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("HH-mm-ss");
 
-    public AbsFlvRecording(RoomInfo roomInfo,Long maxSize, LiveService liveService, HttpClientService httpClientService) {
+    public AbsRecording(RoomInfo roomInfo, Long maxSize, LiveService liveService, HttpClientService httpClientService) {
         this.maxSize = maxSize;
         this.liveService = liveService;
         this.roomInfo = roomInfo;
         this.httpClientService = httpClientService;
     }
-
 
 
     /**
@@ -55,7 +54,7 @@ public abstract class AbsFlvRecording implements Runnable {
      * 当前文件的byte数
      */
     private long now = 0;
-    private boolean stop = false;
+    private boolean skip = false;
     private String nowPath;
 
     /**
@@ -67,7 +66,7 @@ public abstract class AbsFlvRecording implements Runnable {
     /**
      * 房间信息
      */
-    protected  RoomInfo roomInfo;
+    protected RoomInfo roomInfo;
 
     protected final byte[] buff = new byte[1024 * 4];
 
@@ -101,8 +100,8 @@ public abstract class AbsFlvRecording implements Runnable {
         return now;
     }
 
-    public boolean getStop() {
-        return stop;
+    public boolean getSkip() {
+        return skip;
     }
 
 
@@ -115,6 +114,7 @@ public abstract class AbsFlvRecording implements Runnable {
     public void resetNow() {
         now = 0;
     }
+
     public void resetFileIndex() {
         fileIndex = 0;
     }
@@ -127,15 +127,19 @@ public abstract class AbsFlvRecording implements Runnable {
         pathList.add(path);
     }
 
-    public void stop() {
-        stop = true;
+    public RoomInfo getRoomInfo() {
+        return roomInfo;
+    }
+
+    public void skip() {
+        skip = true;
         sayHe();
     }
 
     @Override
     public void run() {
-         RoomInfo roomInfo = liveService.getRoomInfo(this.roomInfo.getRoomId());
-         this.roomInfo=roomInfo!=null ?roomInfo:this.roomInfo;
+        RoomInfo roomInfo = liveService.getRoomInfo(this.roomInfo.getRoomId());
+        this.roomInfo = roomInfo != null ? roomInfo : this.roomInfo;
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = ThreadPoolUtils.getScheduledThreadPoolExecutor(roomInfo.getRoomId().toString(), 1);
         scheduledThreadPoolExecutor.scheduleWithFixedDelay(
                 this::sayHe, 10000, 30000, TimeUnit.MILLISECONDS);
@@ -151,39 +155,39 @@ public abstract class AbsFlvRecording implements Runnable {
 
     public void sayHe() {
         Integer roomId = roomInfo.getRoomId();
-        String jsonStr= JSON.toJSONString(roomInfo);
+        String jsonStr = JSON.toJSONString(roomInfo);
         String infoStr = "\n" +
                 "-----------------{}------------------- \n" +
                 "roomId:{},total:{},fileIndex:{}:stop:{} \n";
-        boolean stopFlag = stop;
-        infoStr += stop ? "" : "{}:{}/{}-----{} \n";
+        boolean stopFlag = skip;
+        infoStr += skip ? "" : "{}:{}/{}-----{} \n";
         boolean emptyFlag = pathList.isEmpty();
         infoStr += emptyFlag ? "" : "recordingPaths:{} \n";
-        infoStr +=  "-----------------{}------------------- \n";
+        infoStr += "-----------------{}------------------- \n";
         if (!stopFlag && !emptyFlag) {
-            log.info(infoStr,jsonStr,
-                    roomId, total, fileIndex, stop,
+            log.info(infoStr, jsonStr,
+                    roomId, total, fileIndex, skip,
                     nowPath, now, maxSize, new BigDecimal(now).divide(new BigDecimal(maxSize), 2, BigDecimal.ROUND_HALF_UP)
                     , pathList,
                     jsonStr);
             return;
         }
         if (!stopFlag) {
-            log.info(infoStr,jsonStr,
-                    roomId, total, fileIndex, stop,
+            log.info(infoStr, jsonStr,
+                    roomId, total, fileIndex, skip,
                     nowPath, now, maxSize, new BigDecimal(now).divide(new BigDecimal(maxSize), 2, BigDecimal.ROUND_HALF_UP),
                     jsonStr);
             return;
         }
         if (!emptyFlag) {
-            log.info(infoStr,jsonStr, roomId, total, fileIndex, stop,
+            log.info(infoStr, jsonStr, roomId, total, fileIndex, skip,
                     pathList,
                     jsonStr);
         }
 
     }
 
-    protected void reNameTo(String path,String targetPath){
+    protected void reNameTo(String path, String targetPath) {
         final File tempFile = new File(path);
         if (tempFile.length() <= 0) {
             log.info("{}:delete", path);
@@ -204,13 +208,13 @@ public abstract class AbsFlvRecording implements Runnable {
             resetFileIndex();
             log.info("{}:等待重新开播", roomInfo.getuName());
         }
-        if (!getStop()){
+        if (!getSkip()) {
             recording();
         }
     }
 
     protected void before() {
-        for (; !liveService.getLiveStatus(roomInfo.getRoomId()) && !getStop(); ) {
+        for (; !liveService.getLiveStatus(roomInfo.getRoomId()) && !getSkip(); ) {
             log.info("{}:未开播", roomInfo.getuName());
             try {
                 Thread.sleep(MONITOR_TIME);

@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * @author qing
  */
-public class M3u8Recording extends AbsFlvRecording {
+public class M3u8Recording extends AbsRecording {
     private final static Logger log = LoggerFactory.getLogger(M3u8Recording.class);
     private final static String SUFFIX = ".ts";
 
@@ -31,7 +31,7 @@ public class M3u8Recording extends AbsFlvRecording {
     private final Set<String> read = new HashSet<>();
 
     public M3u8Recording(Integer roomId, LiveService liveService, HttpClientService httpClientService, long maxSize) {
-        super(new RoomInfo(roomId), maxSize, liveService, httpClientService);
+        super(new RoomInfo(roomId,liveService.getSource()), maxSize, liveService, httpClientService);
     }
 
 
@@ -98,7 +98,7 @@ public class M3u8Recording extends AbsFlvRecording {
             ) {
                 log.info(item);
                 int len = -1;
-                while ((len = liveIn.read(buff)) != -1 && !getStop()) {
+                while ((len = liveIn.read(buff)) != -1 && !getSkip()) {
                     addNow(len);
                     fileOut.write(buff, 0, len);
                 }

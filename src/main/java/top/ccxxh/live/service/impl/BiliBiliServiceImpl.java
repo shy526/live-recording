@@ -11,6 +11,8 @@ import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
 import top.ccxxh.live.po.M3u8;
 import top.ccxxh.live.po.RoomInfo;
+import top.ccxxh.live.recording.AbsRecording;
+import top.ccxxh.live.recording.FlvRecording;
 import top.ccxxh.live.service.LiveService;
 
 import java.util.HashMap;
@@ -48,8 +50,8 @@ public class BiliBiliServiceImpl implements LiveService {
         JSONObject anchorInfo = json.getJSONObject("anchor_info").getJSONObject("base_info");
         result.setRoomTitle(roomInfo.getString("title"));
         result.setRoomId(roomInfo.getInteger("room_id"));
-        result.setSource("bili");
         result.setuId(roomInfo.getInteger("uid"));
+        result.setSource(getSource());
         result.setuName(anchorInfo.getString("uname"));
         return result;
     }
@@ -82,6 +84,21 @@ public class BiliBiliServiceImpl implements LiveService {
         JSONObject result = getJson(httpResult);
         JSONArray jsonArray = result.getJSONArray(KEY_D_URL);
         return jsonArray.getJSONObject(0).getString(KEY_URL);
+    }
+
+    @Override
+    public String getSource() {
+        return "bili";
+    }
+
+    @Override
+    public Class<? extends AbsRecording> getRecording() {
+        return FlvRecording.class;
+    }
+
+    @Override
+    public long getSplitSize() {
+        return (long) ((1000L * 1000L) * 400D);
     }
 
     private JSONObject getJson(HttpResult httpResult) {
