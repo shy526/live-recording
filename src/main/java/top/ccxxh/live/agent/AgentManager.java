@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 
@@ -37,9 +39,9 @@ public class AgentManager {
     private final ThreadPoolExecutor spiderPool = ThreadPoolUtils.getThreadPool("ip_spider");
     private final ThreadPoolExecutor toolPool = ThreadPoolUtils.getThreadPool("toolPool");
     private final ThreadPoolExecutor successPoll = ThreadPoolUtils.getThreadPool("testSuccess");
-    private final Queue<AgentIp> testQueue = new LinkedList<>();
-    private final Queue<AgentIp> successQueue = new LinkedList<>();
-    private final Queue<AgentIp> highQueue = new LinkedList<>();
+    private final BlockingQueue<AgentIp> testQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<AgentIp> successQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<AgentIp> highQueue = new LinkedBlockingQueue<>();
     private final BloomFilter<String> bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), Integer.MAX_VALUE);
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -67,21 +69,19 @@ public class AgentManager {
         testAgentIp(successQueue);
     }
 
-    private void testAgentIp(Queue<AgentIp> queue) {
+    private void testAgentIp(BlockingQueue<AgentIp> queue) {
         successPoll.execute(() -> {
             while (true) {
-                AgentIp agentIp = queue.poll();
-                if (agentIp != null) {
+                try {
+                    AgentIp agentIp = queue.take();
                     if (System.currentTimeMillis() - agentIp.getTestTime() > 1000 * 60 * 5) {
                         returnAgentIp(agentIp, agentIp.getTestUrl());
                         log.info("二次检测:{}", JSON.toJSONString(agentIp));
                     } else {
                         queue.add(agentIp);
                     }
-                }
-                try {
-                    Thread.sleep(500);
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -101,19 +101,15 @@ public class AgentManager {
         ipSpiderScheduled();
         toolPool.execute(() -> {
             while (true) {
-                AgentIp agentIp = testQueue.poll();
-                if (agentIp != null) {
+                try {
+                    AgentIp agentIp = testQueue.take();
                     testAgentPool.execute(() -> {
                         if (!bloomFilter.mightContain(agentIp.getString())) {
                             bloomFilter.put(agentIp.getString());
                             returnAgentIp(agentIp, "https://api.live.bilibili.com/room/v1/Room/room_init?id=22528847");
                         }
                     });
-                } else {
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                    }
+                } catch (Exception e) {
                 }
             }
         });
