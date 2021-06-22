@@ -17,6 +17,7 @@ import top.ccxxh.live.agent.spider.AbsIpSpider;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -29,11 +30,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Component
 public class AgentManager {
     private final static Logger log = LoggerFactory.getLogger(AgentManager.class);
+    private final static int MIN_AGENT_NUMBER = 20;
     private final ThreadPoolExecutor testAgentPool = ThreadPoolUtils.getThreadPool("test_agent");
     private final ThreadPoolExecutor spiderPool = ThreadPoolUtils.getThreadPool("ip_spider");
     private final ThreadPoolExecutor toolPool = ThreadPoolUtils.getThreadPool("toolPool");
+    private final ThreadPoolExecutor successPoll = ThreadPoolUtils.getThreadPool("testSuccess");
     private final Queue<AgentIp> testQueue = new LinkedList<>();
     private final Queue<AgentIp> successQueue = new LinkedList<>();
+    private final Queue<AgentIp> highQueue = new LinkedList<>();
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -42,8 +46,10 @@ public class AgentManager {
     @Autowired
     private ApplicationContext applicationContext;
 
+    /**
+     * 每五分钟抓取一次agentIP 后期时间拉长
+     */
     @Scheduled(cron = "0 */5 * * * ?")
-    @PostConstruct
     private void ipSpiderScheduled() {
         log.info("ipSpiderScheduled start");
         Map<String, AbsIpSpider> beansOfType = applicationContext.getBeansOfType(AbsIpSpider.class);
@@ -54,23 +60,78 @@ public class AgentManager {
         });
     }
 
+
+    private void testSuccessAgentIp() {
+        testAgentIp(successQueue);
+    }
+
+    private void testAgentIp(Queue<AgentIp> queue) {
+        successPoll.execute(() -> {
+            while (true) {
+                AgentIp agentIp = queue.poll();
+                if (agentIp != null) {
+                    if (System.currentTimeMillis() - agentIp.getTestTime() > 1000 * 60 * 5) {
+                        log.info("二次检测:{}", agentIp);
+                        returnAgentIp(agentIp, agentIp.getTestUrl());
+                    } else {
+                        queue.add(agentIp);
+                    }
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                }
+            }
+        });
+
+    }
+
+    private void testHighAgentIp() {
+        testAgentIp(highQueue);
+    }
+
+    /**
+     * 启动初步赛选的线程
+     * 和第一次爬虫
+     */
+    @PostConstruct
     public void testStart() {
+        ipSpiderScheduled();
         toolPool.execute(() -> {
             while (true) {
                 AgentIp agentIp = testQueue.poll();
                 if (agentIp != null) {
                     testAgentPool.execute(() -> {
-                        if (testAgentIp(agentIp, "https://api.live.bilibili.com/room/v1/Room/room_init?id=22528847")) {
-                            successQueue.add(agentIp);
-                        }
+                        returnAgentIp(agentIp, "https://api.live.bilibili.com/room/v1/Room/room_init?id=22528847");
                     });
-                }else {
+                } else {
                     try {
                         Thread.sleep(5000);
-                    } catch (InterruptedException e) {}
+                    } catch (InterruptedException e) {
+                    }
                 }
             }
         });
+        testSuccessAgentIp();
+        testHighAgentIp();
+    }
+
+    /**
+     * 归还agentIP
+     *
+     * @param agentIp agentIp
+     * @param url     测试的url 连接
+     */
+    public void returnAgentIp(AgentIp agentIp, String url) {
+        if (testAgentIp(agentIp, url)) {
+            if (agentIp.getTestRepTime() < 1000) {
+                highQueue.add(agentIp);
+            } else {
+                if (agentIp.getTestRepTime() != -1) {
+                    successQueue.add(agentIp);
+                }
+            }
+        }
     }
 
     public boolean testAgentIp(AgentIp agentIp, String url) {
@@ -81,7 +142,7 @@ public class AgentManager {
         agentIp.setTestRepTime(-1L);
         agentIp.setTestUrl(url);
         try {
-            httpResult = httpClientService.execute(httpRequestBase,false);
+            httpResult = httpClientService.execute(httpRequestBase, false);
             if (httpResult != null) {
                 result = httpResult.getHttpStatus().equals(HttpStatus.SC_OK);
             }
@@ -98,5 +159,27 @@ public class AgentManager {
             }
         }
         return result;
+    }
+
+    public AgentIp getAgent() {
+        AgentIp result = highQueue.poll();
+        if (result == null) {
+            result = successQueue.poll();
+        }
+        if (successQueue.size() < MIN_AGENT_NUMBER) {
+            ipSpiderScheduled();
+        }
+        return result;
+    }
+
+    /**
+     * 租借AgentIp
+     *
+     * @param handle 处理器
+     */
+    public void leaseAgent(LeaseAgentHandle handle) {
+        AgentIp agent = getAgent();
+        handle.process(agent);
+        returnAgentIp(agent, agent.getTestUrl());
     }
 }

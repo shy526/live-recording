@@ -44,7 +44,6 @@ public class LiveRecordingApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        agentManager.testStart();
 
         //liveContent.liveRecording(liveConfig.getBili(), biliBiliService);
         ///liveContent.liveRecording(liveConfig.getMis(), misServiceImpl);

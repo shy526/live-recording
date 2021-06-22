@@ -47,6 +47,9 @@ public class Ip66Spider extends AbsIpSpider {
             final String[] ips = document.body().text().split(" ");
             for (String ip : ips) {
                 final String[] split = ip.split(":");
+                if (split.length<2){
+                    continue;
+                }
                 AgentIp agentIp = new AgentIp(split[0], Integer.parseInt(split[1]));
                 result.add(agentIp);
             }
