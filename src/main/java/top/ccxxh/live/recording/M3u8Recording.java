@@ -31,9 +31,8 @@ public class M3u8Recording extends AbsRecording {
     private final Set<String> read = new HashSet<>();
 
     public M3u8Recording(Integer roomId, LiveService liveService, HttpClientService httpClientService, long maxSize) {
-        super(new RoomInfo(roomId,liveService.getSource()), maxSize, liveService, httpClientService);
+        super(new RoomInfo(roomId, liveService.getSource()), maxSize, liveService, httpClientService);
     }
-
 
 
     @Override
@@ -86,7 +85,8 @@ public class M3u8Recording extends AbsRecording {
                 if (read.contains(url.getPath())) {
                     continue;
                 } else {
-                    read.add(url.getPath());
+                    String path = url.getPath();
+                    read.add(path.substring(path.lastIndexOf('/')));
                 }
             } catch (MalformedURLException e) {
                 log.info(e.getMessage(), e);
