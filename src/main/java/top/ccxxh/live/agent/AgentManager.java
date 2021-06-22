@@ -1,6 +1,9 @@
 package top.ccxxh.live.agent;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Charsets;
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.slf4j.Logger;
@@ -17,7 +20,6 @@ import top.ccxxh.live.agent.spider.AbsIpSpider;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -38,7 +40,7 @@ public class AgentManager {
     private final Queue<AgentIp> testQueue = new LinkedList<>();
     private final Queue<AgentIp> successQueue = new LinkedList<>();
     private final Queue<AgentIp> highQueue = new LinkedList<>();
-
+    private final BloomFilter<String> bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), Integer.MAX_VALUE);
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     @Qualifier("testAgent")
@@ -71,8 +73,8 @@ public class AgentManager {
                 AgentIp agentIp = queue.poll();
                 if (agentIp != null) {
                     if (System.currentTimeMillis() - agentIp.getTestTime() > 1000 * 60 * 5) {
-                        log.info("二次检测:{}", agentIp);
                         returnAgentIp(agentIp, agentIp.getTestUrl());
+                        log.info("二次检测:{}", JSON.toJSONString(agentIp));
                     } else {
                         queue.add(agentIp);
                     }
@@ -102,7 +104,10 @@ public class AgentManager {
                 AgentIp agentIp = testQueue.poll();
                 if (agentIp != null) {
                     testAgentPool.execute(() -> {
-                        returnAgentIp(agentIp, "https://api.live.bilibili.com/room/v1/Room/room_init?id=22528847");
+                        if (!bloomFilter.mightContain(agentIp.getString())) {
+                            bloomFilter.put(agentIp.getString());
+                            returnAgentIp(agentIp, "https://api.live.bilibili.com/room/v1/Room/room_init?id=22528847");
+                        }
                     });
                 } else {
                     try {
@@ -124,12 +129,12 @@ public class AgentManager {
      */
     public void returnAgentIp(AgentIp agentIp, String url) {
         if (testAgentIp(agentIp, url)) {
-            if (agentIp.getTestRepTime() < 1000) {
+            if (agentIp.getTestRepTime() <= 1000) {
                 highQueue.add(agentIp);
-            } else {
-                if (agentIp.getTestRepTime() != -1) {
-                    successQueue.add(agentIp);
-                }
+                log.info("优质代理:{}", JSON.toJSONString(agentIp));
+            } else if (agentIp.getTestRepTime() != -1 && agentIp.getTestRepTime() <= 5000) {
+                successQueue.add(agentIp);
+                log.info("可用代理:{}", JSON.toJSONString(agentIp));
             }
         }
     }
@@ -138,10 +143,10 @@ public class AgentManager {
         HttpRequestBase httpRequestBase = httpClientService.buildProxyGet(agentIp.getIp(), agentIp.getPort(), url, null, null);
         boolean result = false;
         HttpResult httpResult = null;
-        agentIp.setTestTime(System.currentTimeMillis());
         agentIp.setTestRepTime(-1L);
         agentIp.setTestUrl(url);
         try {
+            agentIp.setTestTime(System.currentTimeMillis());
             httpResult = httpClientService.execute(httpRequestBase, false);
             if (httpResult != null) {
                 result = httpResult.getHttpStatus().equals(HttpStatus.SC_OK);

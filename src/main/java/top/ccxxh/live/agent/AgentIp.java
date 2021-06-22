@@ -56,4 +56,8 @@ public class AgentIp implements Serializable {
     public void setTestTime(Long testTime) {
         this.testTime = testTime;
     }
+
+    public String getString(){
+        return ip+":"+port;
+    }
 }
