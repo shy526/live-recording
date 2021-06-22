@@ -1,6 +1,7 @@
 package top.ccxxh.live.agent;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.util.IOUtils;
 import com.google.common.base.Charsets;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
@@ -59,7 +60,8 @@ public class AgentManager {
         Map<String, AbsIpSpider> beansOfType = applicationContext.getBeansOfType(AbsIpSpider.class);
         beansOfType.forEach((key, item) -> {
             spiderPool.execute(() -> {
-                item.getAgentIps(testQueue);
+                Integer total = item.getAgentByUrls(testQueue);
+                log.info("spider info:{}-{}", key,total);
             });
         });
     }
@@ -74,14 +76,16 @@ public class AgentManager {
             while (true) {
                 try {
                     AgentIp agentIp = queue.take();
-                    if (System.currentTimeMillis() - agentIp.getTestTime() > 1000 * 60 * 5) {
+                    long diff = System.currentTimeMillis() - agentIp.getTestTime();
+                    if (diff >= 1000 * 60 * 5) {
+                        Integer lv = agentIp.getLv();
                         returnAgentIp(agentIp, agentIp.getTestUrl());
-                        log.info("二次检测:{}", JSON.toJSONString(agentIp));
+                        log.info("lvTest={}:{}->{}",agentIp.getString(),lv,agentIp.getLv());
                     } else {
                         queue.add(agentIp);
+                        Thread.sleep(1000 * 60 * 5 - diff);
                     }
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
         });
@@ -103,12 +107,12 @@ public class AgentManager {
             while (true) {
                 try {
                     AgentIp agentIp = testQueue.take();
-                    testAgentPool.execute(() -> {
-                        if (!bloomFilter.mightContain(agentIp.getString())) {
-                            bloomFilter.put(agentIp.getString());
-                            returnAgentIp(agentIp, "https://api.live.bilibili.com/room/v1/Room/room_init?id=22528847");
-                        }
-                    });
+                    if (!bloomFilter.mightContain(agentIp.getString())) {
+                        bloomFilter.put(agentIp.getString());
+                        testAgentPool.execute(() -> {
+                            returnAgentIp(agentIp, "https://fm.missevan.com/api/v2/live/133817151");
+                        });
+                    }
                 } catch (Exception e) {
                 }
             }
@@ -127,10 +131,10 @@ public class AgentManager {
         if (testAgentIp(agentIp, url)) {
             if (agentIp.getTestRepTime() <= 1000) {
                 highQueue.add(agentIp);
-                log.info("优质代理:{}", JSON.toJSONString(agentIp));
+                agentIp.setLv(1);
             } else if (agentIp.getTestRepTime() != -1 && agentIp.getTestRepTime() <= 5000) {
                 successQueue.add(agentIp);
-                log.info("可用代理:{}", JSON.toJSONString(agentIp));
+                agentIp.setLv(0);
             }
         }
     }
@@ -152,22 +156,30 @@ public class AgentManager {
             }
         } catch (Exception e) {
         } finally {
-            if (httpResult != null) {
-                try {
-                    httpResult.close();
-                } catch (IOException e) {
-                }
-            }
+            IOUtils.close(httpResult);
         }
         return result;
     }
 
-    public AgentIp getAgent() {
+    public AgentIp getAgent(boolean flag) {
         AgentIp result = highQueue.poll();
         if (result == null) {
             result = successQueue.poll();
         }
-        if (successQueue.size() < MIN_AGENT_NUMBER) {
+        if (flag&&successQueue.size() < MIN_AGENT_NUMBER) {
+            ipSpiderScheduled();
+        }
+        return result;
+    }
+    public AgentIp getAgentTake(boolean flag) {
+        AgentIp result = highQueue.poll();
+        if (result == null) {
+            try {
+                result = successQueue.take();
+            } catch (InterruptedException e) {
+            }
+        }
+        if (flag&&successQueue.size() < MIN_AGENT_NUMBER) {
             ipSpiderScheduled();
         }
         return result;
@@ -179,7 +191,17 @@ public class AgentManager {
      * @param handle 处理器
      */
     public void leaseAgent(LeaseAgentHandle handle) {
-        AgentIp agent = getAgent();
+            leaseAgent(handle,true);
+    }
+    public void leaseAgent(LeaseAgentHandle handle,boolean flag) {
+        AgentIp agent = getAgent(flag);
+        handle.process(agent);
+        returnAgentIp(agent, agent.getTestUrl());
+    }
+
+
+    public void leaseAgentTake(LeaseAgentHandle handle,boolean flag) {
+        AgentIp agent = getAgentTake(flag);
         handle.process(agent);
         returnAgentIp(agent, agent.getTestUrl());
     }

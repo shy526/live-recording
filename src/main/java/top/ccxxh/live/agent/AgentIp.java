@@ -11,6 +11,24 @@ public class AgentIp implements Serializable {
     private Long testTime;
     private String testUrl;
     private Long testRepTime;
+    private String source;
+    private Integer lv;
+
+    public Integer getLv() {
+        return lv;
+    }
+
+    public void setLv(Integer lv) {
+        this.lv = lv;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 
     public Long getTestRepTime() {
         return testRepTime;

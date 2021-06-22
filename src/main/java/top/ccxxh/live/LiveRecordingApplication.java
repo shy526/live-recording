@@ -25,8 +25,6 @@ public class LiveRecordingApplication implements CommandLineRunner {
     @Autowired
     @Qualifier("misServiceImpl")
     private LiveService misServiceImpl;
-    @Autowired
-    private Ip66Spider ip66Spider;
 
     @Autowired
     private LiveConfig liveConfig;
