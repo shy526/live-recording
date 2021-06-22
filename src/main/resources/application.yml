@@ -21,12 +21,24 @@ http:
         idleTime: 4000
         initialDelay: 4000
         delay: 4000
+    testAgent:
+      connectionRequestTimeout: 1000
+      connectTimeout: 1000
+      socketTimeout: 4000
+      validateAfterInactivity: 2000
+      maxTotal: 200
+      defaultMaxPerRoute: 100
+      closeTask:
+        name: testAgent
+        idleTime: 4000
+        initialDelay: 4000
+        delay: 4000
 # live config
 live:
   bili:
     - 22528847
     - 2603963
     - 21611059
-  #mis:
-  #  - 109896001
-  #  - 11432673
+  mis:
+    - 133817151
+    - 11432673

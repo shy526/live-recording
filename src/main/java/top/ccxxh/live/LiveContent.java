@@ -24,7 +24,7 @@ import java.util.Map;
 public class LiveContent {
     private final Map<String, AbsRecording> liveRunThread = new HashMap<>();
     private final static Logger log = LoggerFactory.getLogger(LiveRecordingApplication.class);
-    @SuppressWarnings({"SpringJavaInjectionPointsAutowiringInspection", "SpringJavaAutowiredFieldsWarningInspection"})
+
     @Autowired
     private HttpClientService httpClientService;
 

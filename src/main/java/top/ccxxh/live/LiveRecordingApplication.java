@@ -1,28 +1,21 @@
 package top.ccxxh.live;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import top.ccxh.httpclient.service.HttpClientService;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import top.ccxxh.live.agent.AgentManager;
+import top.ccxxh.live.agent.spider.Ip66Spider;
 import top.ccxxh.live.config.LiveConfig;
-import top.ccxxh.live.po.RoomInfo;
-import top.ccxxh.live.recording.AbsRecording;
-import top.ccxxh.live.recording.FlvRecording;
-import top.ccxxh.live.recording.M3u8Recording;
 import top.ccxxh.live.service.LiveService;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 /**
  * @author qing
  */
 @SpringBootApplication
+@EnableScheduling
 public class LiveRecordingApplication implements CommandLineRunner {
 
 
@@ -32,13 +25,17 @@ public class LiveRecordingApplication implements CommandLineRunner {
     @Autowired
     @Qualifier("misServiceImpl")
     private LiveService misServiceImpl;
-
+    @Autowired
+    private Ip66Spider ip66Spider;
 
     @Autowired
     private LiveConfig liveConfig;
 
     @Autowired
     private LiveContent liveContent;
+
+    @Autowired
+    private AgentManager agentManager;
 
     public static void main(String[] args) {
         SpringApplication.run(LiveRecordingApplication.class, args);
@@ -47,8 +44,10 @@ public class LiveRecordingApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        liveContent.liveRecording(liveConfig.getBili(), biliBiliService);
-        liveContent.liveRecording(liveConfig.getMis(), misServiceImpl);
+        agentManager.testStart();
+
+        //liveContent.liveRecording(liveConfig.getBili(), biliBiliService);
+        ///liveContent.liveRecording(liveConfig.getMis(), misServiceImpl);
 
     }
 
