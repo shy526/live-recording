@@ -82,11 +82,12 @@ public class M3u8Recording extends AbsRecording {
             //过滤
             try {
                 URL url = new URL(item);
-                if (read.contains(url.getPath())) {
+                String path = url.getPath();
+                path=path.substring(path.lastIndexOf('/'));
+                if (read.contains(path)) {
                     continue;
                 } else {
-                    String path = url.getPath();
-                    read.add(path.substring(path.lastIndexOf('/')));
+                    read.add(path);
                 }
             } catch (MalformedURLException e) {
                 log.info(e.getMessage(), e);
