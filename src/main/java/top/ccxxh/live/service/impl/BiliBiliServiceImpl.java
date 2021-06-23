@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.ccxh.httpclient.common.HttpResult;
 import top.ccxh.httpclient.service.HttpClientService;
+import top.ccxxh.live.agent.CreatePool;
 import top.ccxxh.live.constants.LiveSourceEnum;
 import top.ccxxh.live.po.M3u8;
 import top.ccxxh.live.po.RoomInfo;
@@ -23,7 +24,7 @@ import java.util.Map;
  * @author qing
  */
 @Service
-public class BiliBiliServiceImpl implements LiveService {
+public class BiliBiliServiceImpl implements LiveService, CreatePool {
     private final static String ROOM_INFO_INIT_URL = "https://api.live.bilibili.com/room/v1/Room/room_init?id=%s";
     private final static String OLD_PAY_URL = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=%s&quality=3&platform=web";
     private final static String PAY_URL = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?room_id=%s&protocol=0,1&format=0,1,2&codec=0,1&qn=150&platform=web&ptype=8";
@@ -132,4 +133,8 @@ public class BiliBiliServiceImpl implements LiveService {
         return urlInfo.getString("host") + baseUrl + urlInfo.getString("extra");
     }
 
+    @Override
+    public String getCheckUrl() {
+        return "https://api.live.bilibili.com/room/v1/Room/room_init?id=22528847";
+    }
 }

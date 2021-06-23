@@ -13,6 +13,15 @@ public class AgentIp implements Serializable {
     private Long testRepTime;
     private String source;
     private Integer lv;
+    private String queueSource;
+
+    public String getQueueSource() {
+        return queueSource;
+    }
+
+    public void setQueueSource(String queueSource) {
+        this.queueSource = queueSource;
+    }
 
     public Integer getLv() {
         return lv;
@@ -75,7 +84,13 @@ public class AgentIp implements Serializable {
         this.testTime = testTime;
     }
 
-    public String getString(){
-        return ip+":"+port;
+    public String getString() {
+        return ip + ":" + port;
+    }
+
+    public AgentIp copy() {
+        AgentIp result = new AgentIp(ip, port);
+        result.setSource(source);
+        return result;
     }
 }
