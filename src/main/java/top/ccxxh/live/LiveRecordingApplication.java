@@ -15,7 +15,6 @@ import top.ccxxh.live.service.LiveService;
  * @author qing
  */
 @SpringBootApplication
-@EnableScheduling
 public class LiveRecordingApplication implements CommandLineRunner {
 
 
@@ -25,15 +24,11 @@ public class LiveRecordingApplication implements CommandLineRunner {
     @Autowired
     @Qualifier("misServiceImpl")
     private LiveService misServiceImpl;
-
-    @Autowired
-    private LiveConfig liveConfig;
-
     @Autowired
     private LiveContent liveContent;
 
     @Autowired
-    private AgentManager agentManager;
+    private LiveConfig liveConfig;
 
     public static void main(String[] args) {
         SpringApplication.run(LiveRecordingApplication.class, args);
@@ -42,9 +37,8 @@ public class LiveRecordingApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
-        //liveContent.liveRecording(liveConfig.getBili(), biliBiliService);
-        ///liveContent.liveRecording(liveConfig.getMis(), misServiceImpl);
+        liveContent.liveRecording(liveConfig.getBili(), biliBiliService);
+        liveContent.liveRecording(liveConfig.getMis(), misServiceImpl);
 
     }
 

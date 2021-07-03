@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -41,6 +42,8 @@ public class AgentManager implements CreatePool {
     private final static String HIGH = "%s-high";
     private final static String SUCCESS = "%s-success";
 
+    @Value("${agent:false}")
+    private boolean agentFlag;
 
     /**
      * 爬虫的线程池
@@ -162,6 +165,9 @@ public class AgentManager implements CreatePool {
      */
     @PostConstruct
     public void initAgentManager() {
+        if (!agentFlag) {
+            return;
+        }
         initPool();
         ipSpiderScheduled();
         initRepeatCheck();

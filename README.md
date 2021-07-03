@@ -32,3 +32,18 @@
 {host}/live/recording/{source}
 
 {host}/live/sources
+
+
+
+### 配置
+
+```yaml
+live:
+  bili:
+    - 22528847
+    - 2603963
+    - 21611059
+  mis:
+    - 133817151
+    - 11432673
+```
