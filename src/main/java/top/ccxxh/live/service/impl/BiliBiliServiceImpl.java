@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * @author qing
  */
-@Service
+@Service()
 public class BiliBiliServiceImpl implements LiveService, CreatePool {
     private final static String ROOM_INFO_INIT_URL = "https://api.live.bilibili.com/room/v1/Room/room_init?id=%s";
     private final static String OLD_PAY_URL = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=%s&quality=3&platform=web";

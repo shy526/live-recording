@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 配置
@@ -12,8 +13,7 @@ import java.util.List;
 @Component
 @ConfigurationProperties(prefix = "live")
 public class LiveConfig {
-    private List<Integer> bili;
-    private List<Integer> mis;
+    private Map<String,List<Integer>>  roomIdGroup;
     private String rootPath;
 
     public String getRootPath() {
@@ -24,19 +24,11 @@ public class LiveConfig {
         this.rootPath = rootPath;
     }
 
-    public List<Integer> getBili() {
-        return bili;
+    public Map<String, List<Integer>> getRoomIdGroup() {
+        return roomIdGroup;
     }
 
-    public void setBili(List<Integer> bili) {
-        this.bili = bili;
-    }
-
-    public List<Integer> getMis() {
-        return mis;
-    }
-
-    public void setMis(List<Integer> mis) {
-        this.mis = mis;
+    public void setRoomIdGroup(Map<String, List<Integer>> roomIdGroup) {
+        this.roomIdGroup = roomIdGroup;
     }
 }

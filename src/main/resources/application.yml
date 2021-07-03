@@ -33,3 +33,9 @@ testAgent:
     idleTime: 4000
     initialDelay: 4000
     delay: 4000
+live:
+  room-id-group:
+    bilibili:
+      - 1
+    missevan:
+      - 1
